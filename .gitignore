@@ -1,0 +1,30 @@
+# Build output
+target/
+
+# Build loop
+logs/
+_starter/
+starter.zip
+starter.tgz
+
+# Runtime data (H2 files, user uploads)
+data/
+uploads/
+
+# Secrets and local config
+.env
+*.local.properties
+.claude/settings.local.json
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
+
+# OS
+Thumbs.db
+.DS_Store
