@@ -23,7 +23,7 @@ How this file works
   - Typed, validated `@ConfigurationProperties` `AppProperties`: brand, zone, upload dir, seed flag, data key, base URL for links in emails.
   - `.env.example` lists every env var with a comment. Context-loads test passes on the `test` profile.
 
-- [ ] T03 Core building blocks
+- [x] T03 Core building blocks
   - `BaseEntity` (id, createdAt, updatedAt via JPA auditing, `@Version`), `Clock` bean (Asia/Kolkata), `NotFoundException`, `ForbiddenException`, `@ControllerAdvice` mapping them to error pages.
   - Thymeleaf helper bean `@fmt`: money (`₹1,23,456.50`), compact money (`₹1.2 L`, `₹3.4 Cr`), dates (`30 Sep 2026`), month (`September 2026`), relative time, masked account (`XXXXXX4321`), masked PAN (`ABXXXXX4F`).
   - `AmountInWords` (Indian system: thousand, lakh, crore, paise) passing every W12 example.

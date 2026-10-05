@@ -1,0 +1,156 @@
+/* Kosh components. Values come from tokens.css. */
+
+/* Base */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: 1.5;
+	color: var(--color-ink);
+	background: var(--color-page);
+	font-variant-numeric: tabular-nums;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin: 0;
+}
+
+a {
+	color: var(--color-primary);
+}
+
+a:hover {
+	color: var(--color-primary-hover);
+}
+
+:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+
+/* Buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	min-height: 40px;
+	padding: 0 var(--space-4);
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color 120ms ease, box-shadow 120ms ease;
+}
+
+.btn:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+}
+
+.btn-primary {
+	background: var(--color-primary);
+	color: var(--color-on-primary);
+}
+
+.btn-primary:hover {
+	background: var(--color-primary-hover);
+	color: var(--color-on-primary);
+}
+
+/* Error pages (403, 404, 500 and the generic fallback) */
+.error-page {
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+.error-page__header {
+	padding: var(--space-5) var(--space-6);
+}
+
+.wordmark {
+	font-size: var(--text-lg);
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--color-ink);
+	text-decoration: none;
+}
+
+.wordmark:hover {
+	color: var(--color-primary);
+}
+
+.error-page__main {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-6) var(--space-4) var(--space-16);
+}
+
+.error-card {
+	width: 100%;
+	max-width: 480px;
+	padding: var(--space-10) var(--space-8);
+	background: var(--color-surface);
+	border: 1px solid var(--color-divider);
+	border-top: 4px solid var(--color-primary);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-md);
+}
+
+.error-card__code {
+	margin-bottom: var(--space-3);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+	font-weight: 500;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--color-text-muted);
+}
+
+.error-card__heading {
+	margin-bottom: var(--space-3);
+	font-size: var(--text-xl);
+	font-weight: 600;
+	line-height: 1.25;
+	letter-spacing: -0.01em;
+}
+
+.error-card__text {
+	margin-bottom: var(--space-8);
+	color: var(--color-text-secondary);
+}
+
+@media (max-width: 640px) {
+	.error-page__header {
+		padding: var(--space-4);
+	}
+
+	.error-card {
+		padding: var(--space-8) var(--space-5);
+	}
+
+	.error-card .btn {
+		width: 100%;
+	}
+}

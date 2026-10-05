@@ -233,4 +233,5 @@ Arrears in the September run: Basic 4,000, HRA 1,600, Special 2,400 (total 8,000
 - The CTC includes PF admin charges and EDLI (company setting; default on).
 - Tax rounding is to the nearest rupee; statutory ₹10 rounding of income and tax is out of scope.
 - Taxability of leave encashment and gratuity on exit is simplified to "taxable one-time income" unless a later task adds exemptions.
+- Amount in words (2026-10-05, T03): always "Rupees <words> Only", tens hyphenated and no "and" inside the rupee part (W12); paise as " and <n> Paise" ("One Paisa" for 0.01), rounded HALF_UP to two decimals first; zero is "Rupees Zero Only"; crore counts above 99 are worded in the same system ("One Thousand Two Hundred Thirty-Four Crore"); negative amounts are rejected, so a recovery is worded as its positive amount next to a "recoverable" label.
 (Add new decisions here, with the date and the task ID.)

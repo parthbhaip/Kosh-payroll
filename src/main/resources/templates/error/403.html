@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/error :: page(code='403', title='Access denied', heading='You don’t have access to this page', message=~{::message})}">
+<body>
+	<p class="error-card__text" th:fragment="message">If you think you should have access, contact your Kosh administrator.</p>
+</body>
+</html>

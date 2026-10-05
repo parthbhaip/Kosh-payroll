@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="page(code, title, heading, message)">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex">
+	<title th:text="${title} + ' | Kosh'">Error | Kosh</title>
+	<link rel="stylesheet" th:href="@{/css/tokens.css}">
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="error-page">
+	<header class="error-page__header">
+		<a class="wordmark" th:href="@{/}">Kosh</a>
+	</header>
+	<main class="error-page__main">
+		<section class="error-card" aria-labelledby="error-heading">
+			<p class="error-card__code" th:text="'Error ' + ${code}">Error 404</p>
+			<h1 class="error-card__heading" id="error-heading" th:text="${heading}">Page not found</h1>
+			<th:block th:replace="${message}"></th:block>
+			<a class="btn btn-primary" th:href="@{/}">Go to the home page</a>
+		</section>
+	</main>
+</body>
+</html>

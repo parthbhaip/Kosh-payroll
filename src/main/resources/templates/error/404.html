@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/error :: page(code='404', title='Page not found', heading='We can’t find that page', message=~{::message})}">
+<body>
+	<p class="error-card__text" th:fragment="message">The link may be out of date, or the page may have moved. Check the address, or start again from the home page.</p>
+</body>
+</html>

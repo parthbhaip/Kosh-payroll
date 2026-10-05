@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/error :: page(code='500', title='Something went wrong', heading='Something went wrong on our side', message=~{::message})}">
+<body>
+	<p class="error-card__text" th:fragment="message">We couldn’t finish that request, and the error has been logged. Try again in a few minutes. If it keeps happening, tell your Kosh administrator what you were doing and when.</p>
+</body>
+</html>
