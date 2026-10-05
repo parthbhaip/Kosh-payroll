@@ -1,5 +1,12 @@
 # Build output
 target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.mvn/wrapper/maven-wrapper.jar
+HELP.md
 
 # Build loop
 logs/
@@ -24,6 +31,16 @@ uploads/
 .project
 .settings/
 .factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+*.iws
+*.ipr
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 # OS
 Thumbs.db
