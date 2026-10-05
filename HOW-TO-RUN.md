@@ -77,6 +77,7 @@ T61 writes the full guide to `docs/SETUP-MYSQL.md`. Short version (use the exact
 ```powershell
 $env:DB_URL="jdbc:mysql://localhost:3306/kosh"; $env:DB_USER="kosh"; $env:DB_PASSWORD="your-password"
 $env:APP_DATA_KEY="<base64 32-byte key>"; $env:SEED_DEMO="true"
+$env:APP_BASE_URL="http://localhost:8080"; $env:MAIL_FROM="payroll@example.com"
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=mysql"
 ```
 Generate a key once in PowerShell:

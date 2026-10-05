@@ -17,7 +17,7 @@ How this file works
   - Add: htmx WebJar, `webjars-locator-lite`, Thymeleaf Spring Security extras (matching the generated Spring Security), OpenPDF, Apache POI `poi-ooxml`.
   - `./mvnw -q verify` passes. Record Spring Boot, Spring Security, Hibernate, Thymeleaf, htmx, OpenPDF and POI versions in NOTES.md.
 
-- [ ] T02 Configuration and profiles
+- [x] T02 Configuration and profiles
   - `application.properties`: app name, `spring.profiles.default=dev`, `ddl-auto=validate`, `open-in-view=false`, response compression, whitelabel error page off, multipart max 5 MB.
   - `application-dev.properties` (H2 file DB `./data/kosh`, MODE=MySQL, H2 console, logging mail sender, dev-only `APP_DATA_KEY`, `app.seed-demo=true`), `application-test.properties` (H2 in-memory), `application-mysql.properties` (DB_URL / DB_USER / DB_PASSWORD, SMTP, APP_DATA_KEY from env; `app.seed-demo` from env var `SEED_DEMO`, default false).
   - Typed, validated `@ConfigurationProperties` `AppProperties`: brand, zone, upload dir, seed flag, data key, base URL for links in emails.
