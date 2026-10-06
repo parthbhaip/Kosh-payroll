@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title=${workspace.title()}, crumbs=null, content=~{::content})}">
+<body>
+<th:block th:fragment="content">
+	<section class="card welcome" aria-labelledby="welcome-title">
+		<div class="welcome-copy">
+			<p class="eyebrow" th:text="${today}">Monday, 5 October 2026</p>
+			<h2 class="welcome-title" id="welcome-title" th:text="${greeting}">Good morning, Meera</h2>
+			<p class="welcome-text" th:text="${workspace.summary()}">Employees, organisation and salary structures.</p>
+		</div>
+		<dl class="welcome-meta">
+			<div>
+				<dt>Signed in as</dt>
+				<dd th:text="${email}">meera.deshpande@kosh.test</dd>
+			</div>
+			<div>
+				<dt>Roles</dt>
+				<dd>
+					<ul class="role-list">
+						<li class="badge badge-info" th:each="role : ${roles}" th:text="${role}">HR</li>
+					</ul>
+				</dd>
+			</div>
+		</dl>
+	</section>
+
+	<section th:if="${workspaces.size() > 1}" aria-labelledby="workspaces-title">
+		<h2 class="section-title" id="workspaces-title">Your workspaces</h2>
+		<ul class="workspace-grid">
+			<li th:each="other : ${workspaces}">
+				<a class="card workspace-card" th:href="@{${other.path()}}"
+					th:attr="aria-current=${other == workspace} ? 'page'">
+					<span class="workspace-name"><svg th:replace="~{fragments/icon :: icon(${other.icon()})}"></svg><span
+						th:text="${other.label()}">HR</span></span>
+					<span class="workspace-summary" th:text="${other.summary()}">Employees and salary structures.</span>
+					<span class="workspace-here" th:if="${other == workspace}">You are here</span>
+				</a>
+			</li>
+		</ul>
+	</section>
+
+	<section class="card help-card" aria-labelledby="help-card-title">
+		<h2 class="card-title" id="help-card-title">Questions about pay, tax or leave?</h2>
+		<p>The help pages answer the common ones, from payslip dates to tax regimes and approvals.</p>
+		<a class="btn btn-secondary btn-sm" th:href="@{/help}">Open help</a>
+	</section>
+</th:block>
+</body>
+</html>

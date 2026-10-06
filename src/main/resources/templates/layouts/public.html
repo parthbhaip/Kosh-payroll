@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!-- Layout for pages anyone can read: landing page, legal pages, help, sign-in and the error pages.
-     Use: <html th:replace="~{layouts/public :: layout(title='Privacy', content=~{::content})}"> -->
+     Use: <html th:replace="~{layouts/public :: layout(title='Privacy', content=~{::content})}">
+     Signed-in visitors get "Open Kosh" (their home) and sign-out; model attribute signInPage hides the sign-in button. -->
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	th:fragment="layout(title, content)">
 <head th:replace="~{fragments/head :: head(title=${title}, extra=~{})}">
@@ -16,10 +17,14 @@
 				<a th:href="@{/#how-it-works}">How it works</a>
 				<a th:href="@{/help}">Help</a>
 			</nav>
-			<a class="btn btn-primary btn-sm" sec:authorize="!isAuthenticated()" th:href="@{/login}">Sign in</a>
-			<form class="site-signout" sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
-				<button class="btn btn-secondary btn-sm" type="submit">Sign out</button>
-			</form>
+			<a class="btn btn-primary btn-sm" sec:authorize="!isAuthenticated()" th:unless="${signInPage}"
+				th:href="@{/login}">Sign in</a>
+			<div class="cluster site-account" sec:authorize="isAuthenticated()">
+				<a class="btn btn-primary btn-sm" th:href="@{/home}">Open Kosh</a>
+				<form class="site-signout" th:action="@{/logout}" method="post">
+					<button class="btn btn-secondary btn-sm" type="submit">Sign out</button>
+				</form>
+			</div>
 		</div>
 	</header>
 	<main class="site-main" id="main" tabindex="-1">

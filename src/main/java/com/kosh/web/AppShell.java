@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.function.SingletonSupplier;
@@ -26,6 +25,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.kosh.security.Area;
+import com.kosh.security.KoshUserDetails;
 import com.kosh.user.Role;
 
 /**
@@ -154,7 +154,7 @@ public class AppShell {
 				nav.add(new NavGroup(section.title, items));
 			}
 		}
-		String name = (authentication != null) ? authentication.getName() : "";
+		String name = (authentication != null) ? KoshUserDetails.displayName(authentication) : "";
 		CurrentUser user = new CurrentUser(name, initials(name), roles.stream().map(Role::label).toList());
 		// Notifications arrive with T51; until then the bell shows no count.
 		return new Shell(nav, user, orNull(EMPLOYEE_SEARCH, available), orNull(NOTIFICATIONS, available),
@@ -162,13 +162,8 @@ public class AppShell {
 	}
 
 	private static Set<Role> roles(Authentication authentication) {
-		Set<Role> roles = EnumSet.noneOf(Role.class);
-		if (authentication != null && authentication.isAuthenticated()) {
-			for (GrantedAuthority authority : authentication.getAuthorities()) {
-				Role.fromAuthority(authority.getAuthority()).ifPresent(roles::add);
-			}
-		}
-		return roles;
+		return (authentication != null && authentication.isAuthenticated())
+				? Role.fromAuthorities(authentication.getAuthorities()) : EnumSet.noneOf(Role.class);
 	}
 
 	/** {@code MD} for "Meera Deshpande", {@code PJ} for "priya.joshi@kosh.test", {@code H} for "hr@kosh.test". */

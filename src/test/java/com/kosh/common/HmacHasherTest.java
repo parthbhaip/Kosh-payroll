@@ -1,6 +1,7 @@
 package com.kosh.common;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -49,6 +50,19 @@ class HmacHasherTest {
 	@Test
 	void nullStaysNull() {
 		assertThat(hasher.hash(null)).isNull();
+	}
+
+	@Test
+	void derivedSecretsAreStablePerPurposeAndNeverALookUpHash() {
+		String secret = hasher.deriveSecret("kosh/remember-me-key/v1");
+
+		assertThat(secret).matches("[0-9a-f]{64}")
+			.isEqualTo(new HmacHasher(key.clone()).deriveSecret("kosh/remember-me-key/v1"))
+			.isNotEqualTo(hasher.deriveSecret("kosh/other/v1"))
+			.isNotEqualTo(new HmacHasher(EncryptedStringConverterTest.randomKey()).deriveSecret("kosh/remember-me-key/v1"))
+			// Typing the label into a look-up-hashed field must not reveal the secret.
+			.isNotEqualTo(hasher.hash("kosh/remember-me-key/v1"));
+		assertThatThrownBy(() -> hasher.deriveSecret("kosh/lookup-hash/v1")).isInstanceOf(IllegalArgumentException.class);
 	}
 
 }

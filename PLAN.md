@@ -50,7 +50,7 @@ How this file works
   - `User` entity + migration: email (unique, lower-case), password hash, display name, enabled, roles (ADMIN, HR, PAYROLL, FINANCE, MANAGER, EMPLOYEE; many per user), failed login count, locked-until, last login, optional link to Employee (added in T15).
   - Repository with case-insensitive lookup. Tests.
 
-- [ ] T07 Web security and login
+- [x] T07 Web security and login
   - Public: landing, legal, help, login, password reset, static assets. Areas: `/admin/**` ADMIN; `/hr/**` HR or ADMIN; `/payroll/**` PAYROLL or ADMIN; `/finance/**` FINANCE or ADMIN; `/team/**` MANAGER; `/me/**` any signed-in employee.
   - Custom login page (email, password with show/hide, remember me), POST logout, landing by highest role (ADMIN -> /admin, HR -> /hr, PAYROLL -> /payroll, FINANCE -> /finance, else /me), `UserDetailsService`, disabled users rejected, CSP and headers from CLAUDE.md.
   - Tests: anonymous redirected; each role 403 outside its areas; multi-role user reaches each of its areas; landing by role.

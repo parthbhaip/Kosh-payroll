@@ -2,6 +2,7 @@ package com.kosh.common;
 
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import java.util.HexFormat;
 
 import javax.crypto.Mac;
@@ -24,6 +25,8 @@ public class HmacHasher {
 
 	private static final byte[] PURPOSE = "kosh/lookup-hash/v1".getBytes(StandardCharsets.UTF_8);
 
+	private final SecretKeySpec dataKey;
+
 	private final SecretKeySpec key;
 
 	@Autowired
@@ -32,7 +35,20 @@ public class HmacHasher {
 	}
 
 	HmacHasher(byte[] dataKey) {
-		this.key = new SecretKeySpec(mac(new SecretKeySpec(dataKey, ALGORITHM), PURPOSE), ALGORITHM);
+		this.dataKey = new SecretKeySpec(dataKey, ALGORITHM);
+		this.key = new SecretKeySpec(mac(this.dataKey, PURPOSE), ALGORITHM);
+	}
+
+	/**
+	 * A secret for another use, such as signing remember-me cookies (64 hex characters), derived from the data key under
+	 * its own purpose label. Never a look-up hash, so no value a user types can ever hash to it.
+	 */
+	public String deriveSecret(String purpose) {
+		byte[] label = purpose.getBytes(StandardCharsets.UTF_8);
+		if (Arrays.equals(label, PURPOSE)) {
+			throw new IllegalArgumentException("That purpose is reserved for look-up hashes");
+		}
+		return HexFormat.of().formatHex(mac(dataKey, label));
 	}
 
 	/** The look-up hash, or null for null. */

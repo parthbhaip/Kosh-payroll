@@ -24,10 +24,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 class ShellTestPages {
 
-	static final List<String> PAGES = List.of("/hr", "/hr/employees", "/payroll/runs", "/me/payslips", "/me/profile",
+	static final List<String> PAGES = List.of("/hr/employees", "/payroll/runs", "/me/payslips", "/me/profile",
 			"/admin/users", "/notifications");
 
-	@GetMapping({ "/hr", "/hr/employees", "/hr/employees/{id}", "/payroll/runs", "/me/payslips", "/me/profile",
+	// Area homes such as /hr are real pages (HomeController).
+	@GetMapping({ "/hr/employees", "/hr/employees/{id}", "/payroll/runs", "/me/payslips", "/me/profile",
 			"/admin/users", "/notifications" })
 	String appPage() {
 		return "test-only/app-page";

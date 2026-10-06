@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<!-- Shared <head>: page title "<title> | Kosh", favicon, preloaded body fonts, tokens and components, htmx and the
-     <dialog> command fallback (commands.js) for modals and drawers.
+<!-- Shared <head>: page title "<title> | Kosh", favicon, preloaded body fonts, tokens and components, htmx, the
+     <dialog> command fallback (commands.js) for modals and drawers, and show/hide for password fields.
      Use: <head th:replace="~{fragments/head :: head(title='Employees', extra=~{})}">; pass extra=~{::name} for page assets.
      htmx and its config are deferred, so htmx-config.js runs before htmx initialises on DOMContentLoaded.
      The CSRF meta tags are for htmx requests and only written for signed-in users, so public pages create no session. -->
@@ -21,6 +21,7 @@
 	<script th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
 	<script th:src="@{/js/htmx-config.js}" defer></script>
 	<script th:src="@{/js/commands.js}" defer></script>
+	<script th:src="@{/js/password-toggle.js}" defer></script>
 	<th:block th:replace="${extra}"></th:block>
 </head>
 </html>

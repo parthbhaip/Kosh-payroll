@@ -2774,6 +2774,216 @@ a.page-link:not([aria-current]):hover {
 	}
 }
 
+/* ---------------------------------------------------------------- Sign-in page (auth/login.html) */
+.site-account {
+	flex-wrap: nowrap;
+}
+
+.auth-main {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-5);
+	padding: var(--space-12) var(--space-4) var(--space-16);
+}
+
+.auth-card {
+	width: 100%;
+	max-width: 420px;
+	padding: var(--space-8);
+	border-top: 4px solid var(--color-primary);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-md);
+}
+
+.auth-lede {
+	margin-top: var(--space-2);
+	color: var(--color-text-secondary);
+}
+
+.auth-notice {
+	margin-top: var(--space-5);
+}
+
+.auth-form {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+	margin-top: var(--space-6);
+}
+
+.auth-submit {
+	width: 100%;
+}
+
+.auth-foot {
+	margin-top: var(--space-6);
+	padding-top: var(--space-5);
+	border-top: 1px solid var(--color-divider);
+	font-size: var(--text-sm);
+	color: var(--color-text-secondary);
+}
+
+.auth-help {
+	font-size: var(--text-sm);
+	color: var(--color-text-secondary);
+}
+
+/* Password with a Show/Hide button inside the field; password-toggle.js reveals the button. */
+.password-field {
+	position: relative;
+}
+
+.password-field .input {
+	padding-right: var(--space-16);
+}
+
+.password-toggle {
+	position: absolute;
+	top: 50%;
+	right: var(--space-1);
+	transform: translateY(-50%);
+}
+
+.password-toggle[hidden] {
+	display: none;
+}
+
+@media (width < 640px) {
+	.auth-main {
+		padding-block: var(--space-8) var(--space-12);
+	}
+
+	.auth-card {
+		padding: var(--space-6) var(--space-5);
+	}
+}
+
+/* ---------------------------------------------------------------- Workspace home (home/index.html) */
+.welcome {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-6);
+	padding: var(--space-6);
+}
+
+.welcome-copy {
+	flex: 1 1 360px;
+	min-width: 0;
+}
+
+.welcome-title {
+	margin-top: var(--space-2);
+	font-size: var(--text-xl);
+}
+
+.welcome-text {
+	max-width: 64ch;
+	margin-top: var(--space-2);
+	color: var(--color-text-secondary);
+}
+
+.welcome-meta {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+	margin: 0;
+	font-size: var(--text-sm);
+}
+
+.welcome-meta dt {
+	color: var(--color-text-muted);
+}
+
+.welcome-meta dd {
+	margin: 0;
+	font-weight: 500;
+	overflow-wrap: anywhere;
+}
+
+.welcome-meta .role-list {
+	margin-top: var(--space-1);
+}
+
+.section-title {
+	margin-bottom: var(--space-4);
+}
+
+.workspace-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+	gap: var(--space-4);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.workspace-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	height: 100%;
+	padding: var(--space-5);
+	color: var(--color-ink);
+	text-decoration: none;
+	transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease;
+}
+
+.workspace-card:hover {
+	border-color: var(--color-primary);
+	box-shadow: var(--shadow-md);
+	color: var(--color-ink);
+}
+
+.workspace-card[aria-current="page"] {
+	border-color: var(--color-primary);
+	background: var(--color-primary-tint);
+}
+
+.workspace-name {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-weight: 600;
+	color: var(--color-primary);
+}
+
+.workspace-summary {
+	font-size: var(--text-sm);
+	color: var(--color-text-secondary);
+}
+
+.workspace-here {
+	margin-top: auto;
+	font-size: var(--text-xs);
+	font-weight: 600;
+	color: var(--color-text-secondary);
+}
+
+.help-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-2);
+	padding: var(--space-5);
+}
+
+.help-card p {
+	color: var(--color-text-secondary);
+}
+
+.help-card .btn {
+	margin-top: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.workspace-card {
+		transition: none;
+	}
+}
+
 /* ---------------------------------------------------------------- Error pages (403, 404, 500 and the generic fallback) */
 .error-main {
 	display: flex;

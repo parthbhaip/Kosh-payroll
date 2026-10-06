@@ -215,6 +215,7 @@ class AppLayoutTest {
 
 		assertThat(page).containsPattern("<form class=\"site-signout\" action=\"/logout\" method=\"post\">"
 				+ "<input type=\"hidden\" name=\"_csrf\" value=\"[^\"]+\"/>")
+			.contains("<a class=\"btn btn-primary btn-sm\" href=\"/home\">Open Kosh</a>")
 			.contains("<meta name=\"_csrf_header\" content=\"X-CSRF-TOKEN\">")
 			.doesNotContain("href=\"/login\"");
 	}

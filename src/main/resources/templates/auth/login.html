@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/public :: layout(title='Sign in', content=~{::content})}">
+<body>
+<div class="auth-main" th:fragment="content"
+	th:with="failed=${loginError != null}, describedBy=${loginError != null} ? 'login-notice' : null">
+	<section class="card auth-card" aria-labelledby="login-title">
+		<h1 class="auth-title" id="login-title">Sign in to Kosh</h1>
+		<p class="auth-lede">Use the work email your company set up for you.</p>
+		<th:block th:if="${notice != null}">
+			<div class="auth-notice" id="login-notice" th:insert="~{fragments/ui :: flash(${notice})}"></div>
+		</th:block>
+		<form class="auth-form" method="post" th:action="@{/login}">
+			<div class="field">
+				<label class="label" for="email">Work email</label>
+				<input class="input" id="email" name="email" type="email" autocomplete="username" maxlength="254" required
+					th:value="${email}"
+					th:attr="autofocus=${email == null} ? 'autofocus', aria-invalid=${failed} ? 'true', aria-describedby=${describedBy}">
+			</div>
+			<div class="field">
+				<label class="label" for="password">Password</label>
+				<div class="password-field">
+					<input class="input" id="password" name="password" type="password" autocomplete="current-password" required
+						th:attr="autofocus=${email != null} ? 'autofocus', aria-invalid=${failed} ? 'true', aria-describedby=${describedBy}">
+					<button class="btn btn-ghost btn-sm password-toggle" type="button" aria-controls="password"
+						aria-label="Show password" data-password-toggle hidden>Show</button>
+				</div>
+			</div>
+			<label class="check">
+				<input class="checkbox" type="checkbox" name="remember-me" aria-describedby="remember-help">
+				<span class="check-text">Keep me signed in
+					<span class="help" id="remember-help"
+						th:text="|For ${rememberMeDays} days on this device. Leave it off on a shared computer.|">For 14 days on
+						this device. Leave it off on a shared computer.</span>
+				</span>
+			</label>
+			<button class="btn btn-primary auth-submit" type="submit">Sign in</button>
+		</form>
+		<p class="auth-foot">Forgot your password or locked out? Contact HR or your Kosh administrator.</p>
+	</section>
+	<p class="auth-help">New to Kosh? <a th:href="@{/help}">Read how accounts work</a>.</p>
+</div>
+</body>
+</html>

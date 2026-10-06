@@ -1,6 +1,11 @@
 package com.kosh.user;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
 
 /** What a user may do in Kosh (CLAUDE.md > Roles). One user can hold several; everyone who works there is an EMPLOYEE. */
 public enum Role {
@@ -32,6 +37,15 @@ public enum Role {
 			}
 		}
 		return Optional.empty();
+	}
+
+	/** The Kosh roles among granted authorities; anything else (remember-me or anonymous markers) is skipped. */
+	public static Set<Role> fromAuthorities(Collection<? extends GrantedAuthority> authorities) {
+		Set<Role> roles = EnumSet.noneOf(Role.class);
+		for (GrantedAuthority authority : authorities) {
+			fromAuthority(authority.getAuthority()).ifPresent(roles::add);
+		}
+		return roles;
 	}
 
 }
