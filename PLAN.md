@@ -46,7 +46,7 @@ How this file works
 
 ## Phase 1 - Identity, access and audit
 
-- [ ] T06 Users and roles
+- [x] T06 Users and roles
   - `User` entity + migration: email (unique, lower-case), password hash, display name, enabled, roles (ADMIN, HR, PAYROLL, FINANCE, MANAGER, EMPLOYEE; many per user), failed login count, locked-until, last login, optional link to Employee (added in T15).
   - Repository with case-insensitive lookup. Tests.
 

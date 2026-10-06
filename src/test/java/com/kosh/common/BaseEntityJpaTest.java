@@ -22,9 +22,11 @@ import com.koshtest.jpa.ProbeRecord;
 
 /**
  * BaseEntity auditing and versioning, and the encrypted column, through real Hibernate. The probe table is created by
- * Hibernate in a throw-away embedded database, because the Flyway schema has no table for it.
+ * Hibernate in a throw-away embedded database, because the Flyway schema has no table for it. Only the probe entity is
+ * mapped, so the application's repositories (whose entities are not scanned here) stay switched off.
  */
-@DataJpaTest(properties = { "spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop" })
+@DataJpaTest(properties = { "spring.flyway.enabled=false", "spring.jpa.hibernate.ddl-auto=create-drop",
+		"spring.data.jpa.repositories.enabled=false" })
 @ActiveProfiles("test")
 class BaseEntityJpaTest {
 
