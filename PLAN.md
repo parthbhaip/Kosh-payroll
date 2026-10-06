@@ -30,7 +30,7 @@ How this file works
   - `EncryptedStringConverter` (AES-GCM, random IV per value, key from AppProperties) and `HmacHasher` for lookup hashes.
   - Branded 403, 404 and 500 pages. Unit tests for formatters, words, encryption round-trip, tamper detection.
 
-- [ ] T04 Design system
+- [x] T04 Design system
   - `static/css/tokens.css` + `static/css/app.css` implementing every token and component in CLAUDE.md > UI, including hover/focus/disabled states and the responsive data table.
   - Self-hosted IBM Plex Sans (400, 500, 600, 700) and IBM Plex Mono (400, 500), latin woff2 from Fontsource in `static/fonts/`, `font-display: swap`.
   - `static/img/icons.svg` original line icons: dashboard, users, user, building, calendar, clock, wallet, receipt, file, file-text, download, upload, check, x, plus, minus, edit, trash, search, filter, bell, settings, shield, lock, bank, chart, briefcase, logout, chevron-down, chevron-right, menu, alert, info, rupee, send.

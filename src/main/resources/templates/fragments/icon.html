@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- One icon from the sprite, decorative (the button or link around it carries the text or aria-label).
+     Use: <svg th:replace="~{fragments/icon :: icon('plus')}"></svg> -->
+<svg th:fragment="icon(name)" class="icon" aria-hidden="true" focusable="false"><use th:href="@{${'/img/icons.svg#i-' + name}}"></use></svg>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+	<title>No people yet</title>
+	<!-- Kosh empty state: an employee card waiting for its first entry. Colours copy tokens.css. -->
+	<rect x="16" y="14" width="128" height="92" rx="20" fill="#EEF2FD"/>
+	<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+		<rect x="36" y="30" width="88" height="60" rx="8" fill="#FFFFFF" stroke="#5E6677"/>
+		<circle cx="60" cy="52" r="8" stroke="#5E6677"/>
+		<path d="M47 78c1.8-7.2 6.6-11 13-11s11.2 3.8 13 11" stroke="#5E6677"/>
+		<path d="M84 50h28M84 59h20M84 68h24" stroke="#B9C0CC"/>
+	</g>
+	<circle cx="120" cy="88" r="12" fill="#2647B5"/>
+	<path d="M120 82.5v11M114.5 88h11" fill="none" stroke="#FFFFFF" stroke-width="2.25" stroke-linecap="round"/>
+</svg>

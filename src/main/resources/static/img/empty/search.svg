@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+	<title>No matching results</title>
+	<!-- Kosh empty state: a magnifier over an empty list. Colours copy tokens.css. -->
+	<rect x="16" y="14" width="128" height="92" rx="20" fill="#EEF2FD"/>
+	<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+		<rect x="30" y="28" width="76" height="64" rx="8" fill="#FFFFFF" stroke="#5E6677"/>
+		<path d="M42 42h40M42 54h30M42 66h36M42 78h22" stroke="#B9C0CC"/>
+		<circle cx="104" cy="66" r="17" fill="#FFFFFF" stroke="#2647B5" stroke-width="3"/>
+		<path d="m116.5 78.5 11 11" stroke="#161A23" stroke-width="5"/>
+		<path d="M98 66h12" stroke="#5E6677"/>
+	</g>
+</svg>

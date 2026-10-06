@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(title='UI kit', extra=~{::kit-assets})}">
+	<th:block th:fragment="kit-assets">
+		<meta name="robots" content="noindex">
+		<link rel="stylesheet" th:href="@{/css/ui-kit.css}">
+		<script th:src="@{/js/commands.js}" defer></script>
+	</th:block>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to components</a>
+
+<header class="kit-header">
+	<img th:src="@{/img/logo.svg}" alt="Kosh" width="104" height="32">
+	<span class="kit-header-title">Design system</span>
+	<span class="badge badge-warning">Development only</span>
+</header>
+
+<div class="kit-layout">
+	<nav class="kit-nav" aria-label="Components">
+		<ul>
+			<li><a href="#brand">Brand</a></li>
+			<li><a href="#colour">Colour</a></li>
+			<li><a href="#type">Type</a></li>
+			<li><a href="#icons">Icons</a></li>
+			<li><a href="#buttons">Buttons</a></li>
+			<li><a href="#forms">Form controls</a></li>
+			<li><a href="#cards">Cards and stats</a></li>
+			<li><a href="#badges">Badges and chips</a></li>
+			<li><a href="#tables">Data table</a></li>
+			<li><a href="#tabs">Tabs</a></li>
+			<li><a href="#stepper">Stepper</a></li>
+			<li><a href="#timeline">Timeline</a></li>
+			<li><a href="#details">Description list</a></li>
+			<li><a href="#feedback">Flash and toasts</a></li>
+			<li><a href="#dialogs">Modal and drawer</a></li>
+			<li><a href="#empty">Empty states</a></li>
+			<li><a href="#loading">Loading</a></li>
+			<li><a href="#pagination">Pagination</a></li>
+		</ul>
+	</nav>
+
+	<main id="main" class="kit-main">
+		<div class="kit-intro">
+			<h1>Kosh UI kit</h1>
+			<p class="text-secondary">Every component in <code>app.css</code> and each of its states, with the copy style real pages use. Tokens live in <code>tokens.css</code>; nothing here uses a raw colour.</p>
+		</div>
+
+		<!-- Brand -->
+		<section class="kit-section" id="brand" aria-labelledby="brand-title">
+			<header>
+				<h2 id="brand-title">Brand</h2>
+				<p>Logo for headers and the payslip, mark for the favicon and the collapsed sidebar.</p>
+			</header>
+			<div class="kit-row">
+				<div class="card kit-tile"><img th:src="@{/img/logo.svg}" alt="Kosh logo" width="156" height="48"></div>
+				<div class="card kit-tile"><img th:src="@{/img/favicon.svg}" alt="Kosh mark" width="48" height="48"></div>
+				<div class="card kit-tile"><img th:src="@{/img/favicon.svg}" alt="Kosh mark at favicon size" width="16" height="16"></div>
+			</div>
+		</section>
+
+		<!-- Colour -->
+		<section class="kit-section" id="colour" aria-labelledby="colour-title">
+			<header>
+				<h2 id="colour-title">Colour</h2>
+				<p>Text colours meet WCAG AA on their backgrounds; dividers are decorative and control borders meet 3:1.</p>
+			</header>
+			<ul class="swatch-grid">
+				<li class="swatch" th:each="token : ${ {'primary', 'primary-hover', 'primary-tint', 'accent', 'accent-tint', 'ink', 'text-secondary', 'text-muted', 'page', 'surface', 'divider', 'control-border', 'neutral-tint', 'success', 'success-tint', 'warning', 'warning-tint', 'danger', 'danger-hover', 'danger-tint'} }">
+					<span class="swatch-chip" th:style="${'--swatch: var(--color-' + token + ')'}"></span>
+					<code th:text="${'--color-' + token}">--color-primary</code>
+				</li>
+			</ul>
+		</section>
+
+		<!-- Type -->
+		<section class="kit-section" id="type" aria-labelledby="type-title">
+			<header>
+				<h2 id="type-title">Type</h2>
+				<p>IBM Plex Sans for the interface, IBM Plex Mono for codes. All figures are tabular.</p>
+			</header>
+			<div class="card card-body stack">
+				<p class="kit-type-xl">September payroll is ready for approval</p>
+				<p class="kit-type-lg">148 employees, 3 need attention</p>
+				<p>Regular 400: Net pay is credited on the last working day of the month.</p>
+				<p class="kit-weight-500">Medium 500: Attendance closes on 28 Sep 2026.</p>
+				<p class="kit-weight-600">Semibold 600: Pending approvals</p>
+				<p class="kit-weight-700">Bold 700: Payroll that closes on time.</p>
+				<p class="mono">KSH-0021 · UAN 100987654321 · UTR SBIN226270412345</p>
+				<p class="mono kit-weight-500">Mono 500: ESI IP 3114567890</p>
+				<p class="text-secondary">Secondary text: Paid on 30 Sep 2026</p>
+				<p class="text-muted">Muted text: Last updated 2 hours ago</p>
+			</div>
+		</section>
+
+		<!-- Icons -->
+		<section class="kit-section" id="icons" aria-labelledby="icons-title">
+			<header>
+				<h2 id="icons-title">Icons</h2>
+				<p>One sprite, <code>/img/icons.svg</code>: 24px grid, 1.75 stroke, <code>currentColor</code>.</p>
+			</header>
+			<ul class="icon-grid">
+				<li class="icon-tile" th:each="name : ${icons}">
+					<svg th:replace="~{fragments/icon :: icon(${name})}"></svg>
+					<code th:text="${name}">dashboard</code>
+				</li>
+			</ul>
+		</section>
+
+		<!-- Buttons -->
+		<section class="kit-section" id="buttons" aria-labelledby="buttons-title">
+			<header>
+				<h2 id="buttons-title">Buttons</h2>
+				<p>Primary for the one main action on a page, secondary next to it, ghost for low-emphasis actions, danger for destructive ones.</p>
+			</header>
+			<div class="card card-body stack">
+				<p class="kit-label">Medium</p>
+				<div class="cluster">
+					<button class="btn btn-primary" type="button">Run payroll</button>
+					<button class="btn btn-secondary" type="button">Save draft</button>
+					<button class="btn btn-ghost" type="button">View history</button>
+					<button class="btn btn-danger" type="button">Void payslip</button>
+				</div>
+				<p class="kit-label">Small</p>
+				<div class="cluster">
+					<button class="btn btn-primary btn-sm" type="button">Approve</button>
+					<button class="btn btn-secondary btn-sm" type="button">Export</button>
+					<button class="btn btn-ghost btn-sm" type="button">Clear filters</button>
+					<button class="btn btn-danger btn-sm" type="button">Reject</button>
+				</div>
+				<p class="kit-label">With icons</p>
+				<div class="cluster">
+					<button class="btn btn-primary" type="button"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add employee</button>
+					<button class="btn btn-secondary" type="button"><svg th:replace="~{fragments/icon :: icon('download')}"></svg>Download bank file</button>
+					<button class="btn btn-ghost" type="button"><svg th:replace="~{fragments/icon :: icon('send')}"></svg>Email payslips</button>
+					<button class="btn btn-secondary btn-icon" type="button" aria-label="Edit employee"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg></button>
+					<button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="Delete row"><svg th:replace="~{fragments/icon :: icon('trash')}"></svg></button>
+				</div>
+				<p class="kit-label">Disabled and loading</p>
+				<div class="cluster">
+					<button class="btn btn-primary" type="button" disabled>Submit for approval</button>
+					<button class="btn btn-secondary" type="button" disabled>Save draft</button>
+					<button class="btn btn-primary" type="button" aria-busy="true" disabled>Calculating payroll</button>
+					<button class="btn btn-secondary btn-sm" type="button" aria-busy="true" disabled>Exporting</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Forms -->
+		<section class="kit-section" id="forms" aria-labelledby="forms-title">
+			<header>
+				<h2 id="forms-title">Form controls</h2>
+				<p>Every input has a label. Help text and errors are tied to the input with <code>aria-describedby</code>; errors also set <code>aria-invalid</code>.</p>
+			</header>
+			<div class="card card-body">
+				<div class="form-grid">
+					<div class="field">
+						<label class="label" for="kit-name">Full name</label>
+						<input class="input" id="kit-name" name="name" type="text" value="Meera Deshpande" autocomplete="off">
+					</div>
+					<div class="field">
+						<label class="label" for="kit-email">Work email</label>
+						<input class="input" id="kit-email" name="email" type="email" placeholder="name@panchganga.in" autocomplete="off" aria-describedby="kit-email-help">
+						<p class="help" id="kit-email-help">Payslips and approval requests go to this address.</p>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-pan">PAN</label>
+						<input class="input mono" id="kit-pan" name="pan" type="text" value="ABCDE123" autocomplete="off" aria-invalid="true" aria-describedby="kit-pan-error">
+						<p class="error-text" id="kit-pan-error"><svg th:replace="~{fragments/icon :: icon('alert')}"></svg>Enter a PAN like ABCDE1234F: five letters, four digits, one letter.</p>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-basic">Monthly basic</label>
+						<div class="input-group">
+							<span class="input-addon" aria-hidden="true">₹</span>
+							<input class="input num" id="kit-basic" name="basic" type="text" inputmode="decimal" value="32,500.00">
+						</div>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-department">Department</label>
+						<select class="select" id="kit-department" name="department">
+							<option>Finance</option>
+							<option>Human Resources</option>
+							<option selected>Production</option>
+							<option>Quality</option>
+							<option>Sales</option>
+						</select>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-joined">Date of joining</label>
+						<input class="input" id="kit-joined" name="joined" type="date" value="2026-10-01">
+					</div>
+					<div class="field">
+						<label class="label" for="kit-code">Employee code</label>
+						<input class="input mono" id="kit-code" name="code" type="text" value="KSH-0031" readonly aria-describedby="kit-code-help">
+						<p class="help" id="kit-code-help">Generated when the employee is saved.</p>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-uan">UAN <span class="optional">(disabled)</span></label>
+						<input class="input mono" id="kit-uan" name="uan" type="text" value="100987654321" disabled>
+					</div>
+					<div class="field span-all">
+						<label class="label" for="kit-reason">Reason for revision <span class="optional">(optional)</span></label>
+						<textarea class="textarea" id="kit-reason" name="reason" placeholder="For example: annual increment, effective 1 April 2026"></textarea>
+					</div>
+					<fieldset class="fieldset">
+						<legend>Components in this structure</legend>
+						<label class="check"><input class="checkbox" type="checkbox" name="component" value="BASIC" checked> Basic</label>
+						<label class="check"><input class="checkbox" type="checkbox" name="component" value="HRA" checked> House rent allowance</label>
+						<label class="check"><input class="checkbox" type="checkbox" name="component" value="SPECIAL"> Special allowance</label>
+						<label class="check"><input class="checkbox" type="checkbox" name="component" value="CONVEYANCE" checked disabled> Conveyance (fixed by policy)</label>
+					</fieldset>
+					<fieldset class="fieldset">
+						<legend>Tax regime for 2026-27</legend>
+						<label class="check">
+							<input class="radio" type="radio" name="regime" value="NEW" checked aria-describedby="kit-new-help">
+							<span class="check-text">New regime <span class="help" id="kit-new-help">Lower slab rates, few deductions. The default.</span></span>
+						</label>
+						<label class="check">
+							<input class="radio" type="radio" name="regime" value="OLD" aria-describedby="kit-old-help">
+							<span class="check-text">Old regime <span class="help" id="kit-old-help">Claim rent, investments and home-loan interest.</span></span>
+						</label>
+						<label class="check"><input class="radio" type="radio" name="regime-locked" value="OLD" disabled> Locked after the March payroll</label>
+					</fieldset>
+					<fieldset class="fieldset span-all">
+						<legend>Notifications</legend>
+						<label class="check"><input class="switch" type="checkbox" role="switch" name="emailPayslips" checked> Email payslips when payroll is finalized</label>
+						<label class="check"><input class="switch" type="checkbox" role="switch" name="holdSalary"> Hold salary for this employee</label>
+						<label class="check"><input class="switch" type="checkbox" role="switch" name="sms" disabled> SMS alerts (not set up for this company)</label>
+					</fieldset>
+				</div>
+				<div class="form-actions kit-form-actions">
+					<button class="btn btn-ghost" type="button">Cancel</button>
+					<button class="btn btn-primary" type="button">Save employee</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Cards -->
+		<section class="kit-section" id="cards" aria-labelledby="cards-title">
+			<header>
+				<h2 id="cards-title">Cards and stats</h2>
+				<p>Stat cards use compact money (<code>@fmt.compactMoney</code>); a positive change is teal, a negative one red.</p>
+			</header>
+			<div class="stat-grid">
+				<div class="card stat">
+					<p class="stat-label"><svg th:replace="~{fragments/icon :: icon('wallet')}"></svg>Net pay, September 2026</p>
+					<p class="stat-value" th:text="${@fmt.compactMoney(monthNet)}">₹62.5 L</p>
+					<p class="stat-meta"><span class="delta-up">+2.4%</span> on August</p>
+				</div>
+				<div class="card stat">
+					<p class="stat-label"><svg th:replace="~{fragments/icon :: icon('users')}"></svg>Employees paid</p>
+					<p class="stat-value">148</p>
+					<p class="stat-meta"><span class="delta-up">+3</span> joiners, <span class="delta-down">-1</span> leaver</p>
+				</div>
+				<div class="card stat">
+					<p class="stat-label"><svg th:replace="~{fragments/icon :: icon('shield')}"></svg>Statutory dues</p>
+					<p class="stat-value" th:text="${@fmt.compactMoney(statutoryDue)}">₹9.9 L</p>
+					<p class="stat-meta">PF and ESI due 15 Oct 2026</p>
+				</div>
+				<div class="card stat">
+					<p class="stat-label"><svg th:replace="~{fragments/icon :: icon('clock')}"></svg>Pending approvals</p>
+					<p class="stat-value">3</p>
+					<p class="stat-meta">Oldest waiting 2 days</p>
+				</div>
+			</div>
+			<div class="card">
+				<div class="card-header">
+					<div>
+						<h3 class="card-title">September 2026 payroll</h3>
+						<p class="card-subtitle">Panchganga Precision Tools Pvt. Ltd.</p>
+					</div>
+					<span class="badge" data-status="CALCULATED">Calculated</span>
+				</div>
+				<div class="card-body">
+					<p class="text-secondary">Net pay for 148 employees is <strong th:text="${@fmt.money(monthNet)}">₹62,48,315.50</strong>. Review the register, then submit it to Finance for approval.</p>
+				</div>
+				<div class="card-footer">
+					<span>Calculated 2 hours ago by Priya Joshi</span>
+					<button class="btn btn-primary btn-sm" type="button">Submit for approval</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- Badges -->
+		<section class="kit-section" id="badges" aria-labelledby="badges-title">
+			<header>
+				<h2 id="badges-title">Badges and chips</h2>
+				<p>Status badges take their colour from <code>data-status</code>, so templates only print the state.</p>
+			</header>
+			<div class="card card-body stack">
+				<p class="kit-label">Payroll run</p>
+				<div class="cluster">
+					<span class="badge" data-status="DRAFT">Draft</span>
+					<span class="badge" data-status="INPUTS_LOCKED">Inputs locked</span>
+					<span class="badge" data-status="CALCULATED">Calculated</span>
+					<span class="badge" data-status="SUBMITTED">Submitted</span>
+					<span class="badge" data-status="APPROVED">Approved</span>
+					<span class="badge" data-status="REJECTED">Rejected</span>
+					<span class="badge" data-status="FINALIZED">Finalized</span>
+					<span class="badge" data-status="PAID">Paid</span>
+					<span class="badge" data-status="REOPENED">Reopened</span>
+				</div>
+				<p class="kit-label">Employee and payslip</p>
+				<div class="cluster">
+					<span class="badge" data-status="ACTIVE">Active</span>
+					<span class="badge" data-status="ON_NOTICE">On notice</span>
+					<span class="badge" data-status="EXITED">Exited</span>
+					<span class="badge" data-status="VOID">Void</span>
+				</div>
+				<p class="kit-label">Tones</p>
+				<div class="cluster">
+					<span class="badge">Neutral</span>
+					<span class="badge badge-info">Info</span>
+					<span class="badge badge-accent">Accent</span>
+					<span class="badge badge-success">Success</span>
+					<span class="badge badge-warning">Warning</span>
+					<span class="badge badge-danger">Danger</span>
+				</div>
+				<p class="kit-label">Filter chips</p>
+				<div class="cluster">
+					<a class="chip" href="#badges" aria-current="true">All <span class="chip-count">152</span></a>
+					<a class="chip" href="#badges">Active <span class="chip-count">148</span></a>
+					<a class="chip" href="#badges">On notice <span class="chip-count">3</span></a>
+					<a class="chip" href="#badges">Exited <span class="chip-count">1</span></a>
+				</div>
+			</div>
+		</section>
+
+		<!-- Table -->
+		<section class="kit-section" id="tables" aria-labelledby="tables-title">
+			<header>
+				<h2 id="tables-title">Filter bar and data table</h2>
+				<p>Sticky header, sortable columns, right-aligned money, negative figures in red, a totals row. On a phone the table scrolls inside its card.</p>
+			</header>
+			<div class="card">
+				<form class="filter-bar" method="get" action="#tables" role="search" aria-label="Filter the payroll register">
+					<div class="field field-search">
+						<label class="label" for="kit-q">Search</label>
+						<div class="search">
+							<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
+							<input class="input" id="kit-q" name="q" type="search" placeholder="Name or employee code">
+						</div>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-filter-department">Department</label>
+						<select class="select" id="kit-filter-department" name="department">
+							<option value="">All departments</option>
+							<option>Finance</option>
+							<option>Production</option>
+							<option>Quality</option>
+							<option>Sales</option>
+						</select>
+					</div>
+					<div class="field">
+						<label class="label" for="kit-filter-location">Location</label>
+						<select class="select" id="kit-filter-location" name="location">
+							<option value="">All locations</option>
+							<option>MIDC Shiroli</option>
+							<option>Rajarampuri</option>
+							<option>Pune</option>
+						</select>
+					</div>
+					<div class="filter-actions">
+						<a class="btn btn-ghost" href="#tables">Clear</a>
+						<button class="btn btn-secondary" type="submit"><svg th:replace="~{fragments/icon :: icon('filter')}"></svg>Apply</button>
+					</div>
+				</form>
+				<div class="table-wrap">
+					<table class="table">
+						<caption>Payroll register, September 2026</caption>
+						<thead>
+							<tr>
+								<th scope="col"><a class="sort" href="?sort=name#tables">Employee<svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg></a></th>
+								<th scope="col" aria-sort="ascending"><a class="sort" href="?sort=department,desc#tables">Department<svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg></a></th>
+								<th scope="col">Location</th>
+								<th scope="col">Status</th>
+								<th scope="col" class="num"><a class="sort" href="?sort=gross#tables">Gross<svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg></a></th>
+								<th scope="col" class="num">Deductions</th>
+								<th scope="col" class="num">Adjustments</th>
+								<th scope="col" class="num"><a class="sort" href="?sort=net#tables">Net pay<svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg></a></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="row : ${rows}">
+								<th scope="row">
+									<span class="cell-title" th:text="${row.name()}">Meera Deshpande</span>
+									<span class="cell-sub mono" th:text="${row.code()}">KSH-0003</span>
+								</th>
+								<td th:text="${row.department()}">Finance</td>
+								<td th:text="${row.location()}">Rajarampuri</td>
+								<td><span class="badge" th:attr="data-status=${row.status()}" th:text="${row.statusLabel()}">Active</span></td>
+								<td class="num" th:text="${@fmt.money(row.gross())}">₹96,500.00</td>
+								<td class="num" th:text="${@fmt.money(row.deductions())}">₹14,862.00</td>
+								<td class="num" th:classappend="${row.adjustment().signum() < 0} ? 'neg'" th:text="${@fmt.money(row.adjustment())}">₹0.00</td>
+								<td class="num" th:text="${@fmt.money(row.net())}">₹81,638.00</td>
+							</tr>
+						</tbody>
+						<tfoot>
+							<tr>
+								<th scope="row" colspan="4">Total, 6 employees</th>
+								<td class="num" th:text="${@fmt.money(totals.gross())}">₹2,98,200.00</td>
+								<td class="num" th:text="${@fmt.money(totals.deductions())}">₹40,876.00</td>
+								<td class="num" th:classappend="${totals.adjustment().signum() < 0} ? 'neg'" th:text="${@fmt.money(totals.adjustment())}">-₹1,900.00</td>
+								<td class="num" th:text="${@fmt.money(totals.net())}">₹2,55,424.00</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+				<nav class="pagination" aria-label="Payroll register pages">
+					<p>Showing <strong>1–6</strong> of <strong>148</strong> employees</p>
+					<ul>
+						<li><span class="page-link page-prev" aria-disabled="true"><svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg>Previous</span></li>
+						<li><a class="page-link" href="#tables" aria-current="page" aria-label="Page 1">1</a></li>
+						<li class="page-number"><a class="page-link" href="#tables" aria-label="Page 2">2</a></li>
+						<li class="page-number"><a class="page-link" href="#tables" aria-label="Page 3">3</a></li>
+						<li class="page-number"><span class="page-link" aria-hidden="true">…</span></li>
+						<li class="page-number"><a class="page-link" href="#tables" aria-label="Page 25">25</a></li>
+						<li><a class="page-link" href="#tables">Next<svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg></a></li>
+					</ul>
+				</nav>
+			</div>
+		</section>
+
+		<!-- Tabs -->
+		<section class="kit-section" id="tabs" aria-labelledby="tabs-title">
+			<header>
+				<h2 id="tabs-title">Tabs</h2>
+				<p>Tabs are links to server-rendered views, so they work without JavaScript and can be bookmarked.</p>
+			</header>
+			<div class="card card-body">
+				<nav class="tabs" aria-label="Employee record">
+					<a class="tab" href="#tabs" aria-current="page">Overview</a>
+					<a class="tab" href="#tabs">Salary</a>
+					<a class="tab" href="#tabs">Attendance <span class="tab-count">2</span></a>
+					<a class="tab" href="#tabs">Leave</a>
+					<a class="tab" href="#tabs">Documents <span class="tab-count">5</span></a>
+					<a class="tab" href="#tabs">Tax declarations</a>
+				</nav>
+			</div>
+		</section>
+
+		<!-- Stepper -->
+		<section class="kit-section" id="stepper" aria-labelledby="stepper-title">
+			<header>
+				<h2 id="stepper-title">Stepper</h2>
+				<p>Multi-step flows such as the payroll run wizard. Done steps link back; the current step has <code>aria-current="step"</code>.</p>
+			</header>
+			<div class="card card-body">
+				<ol class="stepper" aria-label="Run payroll">
+					<li class="step is-complete">
+						<span class="step-marker"><svg th:replace="~{fragments/icon :: icon('check')}"></svg></span>
+						<a class="step-label" href="#stepper">Select month</a>
+						<span class="step-hint">September 2026</span>
+					</li>
+					<li class="step is-complete">
+						<span class="step-marker"><svg th:replace="~{fragments/icon :: icon('check')}"></svg></span>
+						<span class="step-label">Pre-checks</span>
+						<span class="step-hint">3 warnings</span>
+					</li>
+					<li class="step" aria-current="step">
+						<span class="step-marker"></span>
+						<span class="step-label">Inputs</span>
+						<span class="step-hint">Overtime and bonus</span>
+					</li>
+					<li class="step">
+						<span class="step-marker"></span>
+						<span class="step-label">Calculate</span>
+					</li>
+					<li class="step">
+						<span class="step-marker"></span>
+						<span class="step-label">Review</span>
+					</li>
+				</ol>
+			</div>
+		</section>
+
+		<!-- Timeline -->
+		<section class="kit-section" id="timeline" aria-labelledby="timeline-title">
+			<header>
+				<h2 id="timeline-title">Timeline</h2>
+				<p>History of a payroll run, a salary revision or an exit: who did what, and when.</p>
+			</header>
+			<div class="card card-body">
+				<ol class="timeline">
+					<li class="timeline-item">
+						<p class="timeline-title">Draft created</p>
+						<p class="timeline-meta">Priya Joshi, Payroll · 25 Sep 2026, 10:12 AM</p>
+					</li>
+					<li class="timeline-item is-info">
+						<p class="timeline-title">Inputs locked for 148 employees</p>
+						<p class="timeline-meta">Priya Joshi, Payroll · 26 Sep 2026, 4:40 PM</p>
+					</li>
+					<li class="timeline-item is-danger">
+						<p class="timeline-title">Rejected by Finance</p>
+						<p class="timeline-meta">Nikhil Pawar, Finance · 27 Sep 2026, 11:05 AM</p>
+						<p class="timeline-body">Overtime for the Shiroli second shift is missing. Please add it and recalculate.</p>
+					</li>
+					<li class="timeline-item is-warning">
+						<p class="timeline-title">Submitted for approval</p>
+						<p class="timeline-meta">Priya Joshi, Payroll · 28 Sep 2026, 9:30 AM</p>
+					</li>
+					<li class="timeline-item is-success">
+						<p class="timeline-title">Approved</p>
+						<p class="timeline-meta">Nikhil Pawar, Finance · 28 Sep 2026, 3:15 PM</p>
+					</li>
+				</ol>
+			</div>
+		</section>
+
+		<!-- Description list -->
+		<section class="kit-section" id="details" aria-labelledby="details-title">
+			<header>
+				<h2 id="details-title">Description list</h2>
+				<p>Read-only record details. Bank accounts are always masked; PAN is masked outside the employee's own profile and HR.</p>
+			</header>
+			<div class="card card-body">
+				<dl class="dl">
+					<dt>Employee code</dt>
+					<dd class="mono">KSH-0003</dd>
+					<dt>Designation</dt>
+					<dd>Senior Accounts Executive</dd>
+					<dt>Department and location</dt>
+					<dd>Finance, Rajarampuri head office</dd>
+					<dt>Date of joining</dt>
+					<dd>12 Jun 2019</dd>
+					<dt>PAN</dt>
+					<dd class="mono" th:text="${@fmt.maskedPan('BQRPD4821K')}">BQXXXXX1K</dd>
+					<dt>UAN</dt>
+					<dd class="mono">100987654321</dd>
+					<dt>Bank account</dt>
+					<dd><span class="mono" th:text="${@fmt.maskedAccount('50100234564321')}">XXXXXX4321</span> · HDFC Bank, Kolhapur</dd>
+				</dl>
+			</div>
+		</section>
+
+		<!-- Feedback -->
+		<section class="kit-section" id="feedback" aria-labelledby="feedback-title">
+			<header>
+				<h2 id="feedback-title">Flash messages and toasts</h2>
+				<p>Flash messages sit at the top of the page after a redirect. Toasts confirm quick actions in an <code>aria-live</code> region and leave after six seconds (they stay put here).</p>
+			</header>
+			<div class="stack">
+				<div class="flash flash-success" role="status">
+					<svg th:replace="~{fragments/icon :: icon('check')}"></svg>
+					<div>
+						<p class="flash-title">September payroll is ready for approval</p>
+						<p class="flash-text">Calculated for 148 employees. Net pay <span th:text="${@fmt.money(monthNet)}">₹62,48,315.50</span>.</p>
+					</div>
+				</div>
+				<div class="flash" role="status">
+					<svg th:replace="~{fragments/icon :: icon('info')}"></svg>
+					<div>
+						<p class="flash-title">Attendance for September closes on 28 Sep 2026</p>
+						<p class="flash-text">Regularisation requests after that date move to October.</p>
+					</div>
+				</div>
+				<div class="flash flash-warning" role="status">
+					<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+					<div>
+						<p class="flash-title">3 employees have no bank details</p>
+						<p class="flash-text">They will be left out of the bank file. <a href="#tables">Review employees</a></p>
+					</div>
+				</div>
+				<div class="flash flash-danger" role="alert">
+					<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+					<div>
+						<p class="flash-title">Payroll couldn’t be calculated</p>
+						<p class="flash-text">KSH-0031 has no salary structure. Assign one and calculate again.</p>
+					</div>
+				</div>
+				<div class="toast-region kit-toasts" aria-live="polite">
+					<div class="toast toast-success">
+						<svg th:replace="~{fragments/icon :: icon('check')}"></svg>
+						<p>Payslips emailed to 148 employees</p>
+					</div>
+					<div class="toast">
+						<svg th:replace="~{fragments/icon :: icon('info')}"></svg>
+						<p>Draft saved</p>
+					</div>
+					<div class="toast toast-warning">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+						<p>2 regularisation requests are still pending</p>
+					</div>
+					<div class="toast toast-danger">
+						<svg th:replace="~{fragments/icon :: icon('x')}"></svg>
+						<p>Bank file export failed. Try again in a minute.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Dialogs -->
+		<section class="kit-section" id="dialogs" aria-labelledby="dialogs-title">
+			<header>
+				<h2 id="dialogs-title">Modal and drawer</h2>
+				<p>Native <code>&lt;dialog&gt;</code>: focus stays inside, Esc closes it, and focus returns to the button that opened it.</p>
+			</header>
+			<div class="cluster">
+				<button class="btn btn-primary" type="button" commandfor="kit-modal" command="show-modal">Submit for approval</button>
+				<button class="btn btn-secondary" type="button" commandfor="kit-drawer" command="show-modal"><svg th:replace="~{fragments/icon :: icon('user')}"></svg>Quick view</button>
+			</div>
+			<dialog class="modal" id="kit-modal" aria-labelledby="kit-modal-title">
+				<div class="dialog-header">
+					<h2 id="kit-modal-title">Submit September payroll for approval?</h2>
+				</div>
+				<div class="dialog-body">
+					<p>Finance will review net pay of <strong th:text="${@fmt.money(monthNet)}">₹62,48,315.50</strong> for 148 employees. You can’t approve a run you submitted.</p>
+				</div>
+				<form class="dialog-footer" method="dialog">
+					<button class="btn btn-secondary" type="submit" value="cancel">Cancel</button>
+					<button class="btn btn-primary" type="submit" value="submit">Submit for approval</button>
+				</form>
+			</dialog>
+			<dialog class="drawer" id="kit-drawer" aria-labelledby="kit-drawer-title" closedby="any">
+				<div class="dialog-header">
+					<div>
+						<h2 id="kit-drawer-title">Meera Deshpande</h2>
+						<p class="text-muted"><span class="mono">KSH-0003</span> · Senior Accounts Executive</p>
+					</div>
+					<form method="dialog">
+						<button class="btn btn-ghost btn-icon btn-sm" type="submit" aria-label="Close"><svg th:replace="~{fragments/icon :: icon('x')}"></svg></button>
+					</form>
+				</div>
+				<div class="dialog-body stack">
+					<p><span class="badge" data-status="ACTIVE">Active</span></p>
+					<dl class="dl">
+						<dt>Department</dt>
+						<dd>Finance</dd>
+						<dt>Location</dt>
+						<dd>Rajarampuri</dd>
+						<dt>Reports to</dt>
+						<dd>Kavita Rao</dd>
+						<dt>Net pay, September</dt>
+						<dd th:text="${@fmt.money(rows[0].net())}">₹81,638.00</dd>
+					</dl>
+				</div>
+				<form class="dialog-footer" method="dialog">
+					<button class="btn btn-secondary" type="submit">Close</button>
+				</form>
+			</dialog>
+		</section>
+
+		<!-- Empty states -->
+		<section class="kit-section" id="empty" aria-labelledby="empty-title">
+			<header>
+				<h2 id="empty-title">Empty states</h2>
+				<p>Say what is missing and offer the next step.</p>
+			</header>
+			<div class="kit-grid-2">
+				<div class="card empty-state">
+					<img th:src="@{/img/empty/people.svg}" alt="" width="160" height="120">
+					<h3 class="empty-title">No employees yet</h3>
+					<p class="empty-text">Add your first employee to start building salary structures and running payroll.</p>
+					<div class="cluster"><button class="btn btn-primary" type="button"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add employee</button></div>
+				</div>
+				<div class="card empty-state">
+					<img th:src="@{/img/empty/documents.svg}" alt="" width="160" height="120">
+					<h3 class="empty-title">No payslips for September</h3>
+					<p class="empty-text">Payslips appear here once September payroll is finalized.</p>
+				</div>
+				<div class="card empty-state">
+					<img th:src="@{/img/empty/search.svg}" alt="" width="160" height="120">
+					<h3 class="empty-title">No employees match these filters</h3>
+					<p class="empty-text">Try another name or employee code, or clear the filters.</p>
+					<div class="cluster"><a class="btn btn-secondary" href="#empty">Clear filters</a></div>
+				</div>
+				<div class="card empty-state">
+					<img th:src="@{/img/empty/inbox.svg}" alt="" width="160" height="120">
+					<h3 class="empty-title">You’re all caught up</h3>
+					<p class="empty-text">No leave, attendance or reimbursement requests are waiting for you.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- Loading -->
+		<section class="kit-section" id="loading" aria-labelledby="loading-title">
+			<header>
+				<h2 id="loading-title">Skeleton loaders</h2>
+				<p>Placeholders while an htmx fragment loads. The container is <code>aria-busy</code> and says what is loading.</p>
+			</header>
+			<div class="stat-grid" aria-busy="true">
+				<p class="visually-hidden">Loading payroll summary</p>
+				<div class="card stat" aria-hidden="true">
+					<span class="skeleton skeleton-title"></span>
+					<span class="skeleton skeleton-value"></span>
+					<span class="skeleton"></span>
+				</div>
+				<div class="card stat" aria-hidden="true">
+					<span class="skeleton skeleton-title"></span>
+					<span class="skeleton skeleton-value"></span>
+					<span class="skeleton"></span>
+				</div>
+				<div class="card card-body cluster" aria-hidden="true">
+					<span class="skeleton skeleton-circle"></span>
+					<div class="stack kit-grow">
+						<span class="skeleton skeleton-title"></span>
+						<span class="skeleton"></span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Pagination -->
+		<section class="kit-section" id="pagination" aria-labelledby="pagination-title">
+			<header>
+				<h2 id="pagination-title">Pagination</h2>
+				<p>Page links keep the current filters and sort. Below 640px only Previous and Next remain.</p>
+			</header>
+			<div class="card">
+				<nav class="pagination" aria-label="Employee pages">
+					<p>Showing <strong>101–125</strong> of <strong>152</strong> employees</p>
+					<ul>
+						<li><a class="page-link page-prev" href="#pagination"><svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg>Previous</a></li>
+						<li class="page-number"><a class="page-link" href="#pagination" aria-label="Page 1">1</a></li>
+						<li class="page-number"><span class="page-link" aria-hidden="true">…</span></li>
+						<li class="page-number"><a class="page-link" href="#pagination" aria-label="Page 4">4</a></li>
+						<li><a class="page-link" href="#pagination" aria-current="page" aria-label="Page 5">5</a></li>
+						<li class="page-number"><a class="page-link" href="#pagination" aria-label="Page 6">6</a></li>
+						<li class="page-number"><a class="page-link" href="#pagination" aria-label="Page 7">7</a></li>
+						<li><a class="page-link" href="#pagination">Next<svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg></a></li>
+					</ul>
+				</nav>
+			</div>
+			<div class="card">
+				<nav class="pagination" aria-label="Payslip pages">
+					<p>Showing <strong>13–14</strong> of <strong>14</strong> payslips</p>
+					<ul>
+						<li><a class="page-link page-prev" href="#pagination"><svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg>Previous</a></li>
+						<li class="page-number"><a class="page-link" href="#pagination" aria-label="Page 1">1</a></li>
+						<li><a class="page-link" href="#pagination" aria-current="page" aria-label="Page 2">2</a></li>
+						<li><span class="page-link" aria-disabled="true">Next<svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg></span></li>
+					</ul>
+				</nav>
+			</div>
+		</section>
+	</main>
+</div>
+</body>
+</html>

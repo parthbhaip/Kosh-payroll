@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-- Shared <head>: page title "<title> | Kosh", favicon, preloaded body fonts, tokens and components.
+     Use: <head th:replace="~{fragments/head :: head(title='Employees', extra=~{})}">; pass extra=~{::name} for page assets. -->
+<head th:fragment="head(title, extra)">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:text="${title} + ' | Kosh'">Kosh</title>
+	<link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+	<link rel="preload" as="font" type="font/woff2" crossorigin th:href="@{/fonts/ibm-plex-sans-latin-400-normal.woff2}">
+	<link rel="preload" as="font" type="font/woff2" crossorigin th:href="@{/fonts/ibm-plex-sans-latin-600-normal.woff2}">
+	<link rel="stylesheet" th:href="@{/css/tokens.css}">
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+	<th:block th:replace="${extra}"></th:block>
+</head>
+</html>

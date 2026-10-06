@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+	<title>No documents yet</title>
+	<!-- Kosh empty state: a payslip stack with nothing issued. Colours copy tokens.css. -->
+	<rect x="16" y="14" width="128" height="92" rx="20" fill="#EEF2FD"/>
+	<g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+		<path d="M66 24h40l12 12v52a4 4 0 0 1-4 4H66a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4z" fill="#FFFFFF" stroke="#B9C0CC"/>
+		<path d="M54 32h40l12 12v52a4 4 0 0 1-4 4H54a4 4 0 0 1-4-4V36a4 4 0 0 1 4-4z" fill="#FFFFFF" stroke="#5E6677"/>
+		<path d="M94 32v12h12" stroke="#5E6677"/>
+		<path d="M60 47h8M60 51.5h8" stroke="#2647B5"/>
+		<path d="M63 47c2.4 0 3.6 1.2 3.6 3.3S65.4 54 63 54h-3l6 6" stroke="#2647B5"/>
+		<path d="M60 70h36M60 78h36M60 86h22" stroke="#B9C0CC"/>
+	</g>
+</svg>
