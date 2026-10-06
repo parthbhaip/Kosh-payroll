@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Layout for pages anyone can read: landing page, legal pages, help, sign-in and the error pages.
+     Use: <html th:replace="~{layouts/public :: layout(title='Privacy', content=~{::content})}"> -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:fragment="layout(title, content)">
+<head th:replace="~{fragments/head :: head(title=${title}, extra=~{})}">
+	<title>Kosh</title>
+</head>
+<body class="public">
+	<a class="skip-link" href="#main">Skip to content</a>
+	<header class="site-header">
+		<div class="container site-header-inner">
+			<a class="site-brand" th:href="@{/}"><img th:src="@{/img/logo.svg}" alt="Kosh home" width="104" height="32"></a>
+			<nav class="site-nav" aria-label="Site">
+				<a th:href="@{/#features}">Features</a>
+				<a th:href="@{/#how-it-works}">How it works</a>
+				<a th:href="@{/help}">Help</a>
+			</nav>
+			<a class="btn btn-primary btn-sm" sec:authorize="!isAuthenticated()" th:href="@{/login}">Sign in</a>
+			<form class="site-signout" sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post">
+				<button class="btn btn-secondary btn-sm" type="submit">Sign out</button>
+			</form>
+		</div>
+	</header>
+	<main class="site-main" id="main" tabindex="-1">
+		<th:block th:replace="${content}"></th:block>
+	</main>
+	<footer class="site-footer">
+		<div class="container site-footer-inner">
+			<p class="footer-brand">
+				<img th:src="@{/img/favicon.svg}" alt="" width="24" height="24">
+				<strong>Kosh</strong>
+				<span>Payroll that closes on time.</span>
+			</p>
+			<nav class="footer-nav" aria-label="Legal and help">
+				<a th:href="@{/privacy}">Privacy</a>
+				<a th:href="@{/terms}">Terms</a>
+				<a th:href="@{/help}">Help</a>
+			</nav>
+		</div>
+	</footer>
+</body>
+</html>

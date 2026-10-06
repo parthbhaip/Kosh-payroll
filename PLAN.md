@@ -37,7 +37,7 @@ How this file works
   - Original SVG logo (mark + wordmark) `static/img/logo.svg` and `favicon.svg`. 4 original empty-state line illustrations.
   - Dev-only page `/dev/ui-kit` showing every component and state. MockMvc test: renders in dev, 404 elsewhere.
 
-- [ ] T05 Layouts, app shell and public pages
+- [x] T05 Layouts, app shell and public pages
   - `layouts/public.html` and `layouts/app.html`. App shell per CLAUDE.md: sidebar groups shown by role, active item, collapse states, mobile drawer, top bar with breadcrumbs, search box, bell placeholder count, user menu with roles and sign-out.
   - Fragments: flash/toast, form field (label/help/error), pagination, empty state, money, status badge, stat card, data table header with sort links, stepper, timeline, description list.
   - htmx from WebJars on every page; CSRF wired via `static/js/htmx-config.js`; indicator styles disabled.

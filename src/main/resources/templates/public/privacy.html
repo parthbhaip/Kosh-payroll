@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/public :: layout(title='Privacy', content=~{::content})}">
+<body>
+<div class="container doc-page" th:fragment="content">
+	<header class="doc-header">
+		<h1>Privacy notice</h1>
+		<p class="doc-updated">Last updated 5 October 2026</p>
+		<p class="doc-lede">Kosh holds personal data so that your employer can pay you correctly and meet its legal duties.
+			This notice explains what is kept, who can see it and how it is protected.</p>
+	</header>
+	<div class="prose">
+		<h2>Who is responsible</h2>
+		<p>Your employer decides what Kosh is used for and is responsible for the data in it, as the data fiduciary under
+			the Digital Personal Data Protection Act, 2023. Questions about your own data go to your HR team.</p>
+
+		<h2>What Kosh holds</h2>
+		<ul>
+			<li>Identity and contact details: name, date of birth, gender, addresses, mobile number, personal email and an
+				emergency contact.</li>
+			<li>Employment details: employee code, department, designation, location, manager, joining date and exit
+				details.</li>
+			<li>Pay details: salary structure and revisions, attendance, leave, payslips, loans and reimbursement claims.</li>
+			<li>Statutory details: PAN, UAN, ESI number, tax regime and investment declarations with their proofs.</li>
+			<li>Bank details: bank name, IFSC, account number and account holder name.</li>
+			<li>Account activity: sign-ins, failed sign-in attempts and changes you make, kept in an audit log.</li>
+		</ul>
+		<p>Kosh never stores Aadhaar numbers.</p>
+
+		<h2>Why it is used</h2>
+		<p>To calculate and pay salaries, deduct and deposit PF, ESI, professional tax and income tax, produce payslips
+			and statutory returns, run leave and attendance, and settle dues when someone leaves. It is not used for
+			marketing and is not sold.</p>
+
+		<h2>Who can see it</h2>
+		<ul>
+			<li>You can see your own profile, payslips, leave, attendance, tax declarations and claims.</li>
+			<li>Your manager sees your leave, attendance and reimbursement requests, never your salary.</li>
+			<li>HR, payroll, finance and administrators see what their role needs. Salary figures are limited to these
+				roles.</li>
+			<li>Outside Kosh, data goes only where the law or your pay requires it: the bank that pays your salary and the
+				EPFO, ESIC, professional tax and income-tax authorities.</li>
+		</ul>
+
+		<h2>How it is protected</h2>
+		<ul>
+			<li>PAN and bank account numbers are encrypted in the database. Account numbers are shown masked, as
+				XXXXXX4321, everywhere except the bank transfer file.</li>
+			<li>Passwords are stored only as one-way hashes. Accounts lock for a while after repeated failed sign-ins.</li>
+			<li>Changes to salaries, bank details and roles are recorded in the audit log, and the most sensitive ones need
+				a second person to approve them.</li>
+			<li>Uploaded documents are kept outside the public website and are only served to people allowed to see them.</li>
+		</ul>
+
+		<h2>How long it is kept</h2>
+		<p>Payroll, tax and statutory records are kept for as long as labour and tax laws require employers to keep them,
+			including after you leave. Other data is removed when it is no longer needed for those purposes.</p>
+
+		<h2>Cookies</h2>
+		<p>Kosh sets one session cookie when you sign in, and a remember-me cookie only if you ask for it. There are no
+			analytics, advertising or tracking cookies.</p>
+
+		<h2>Your choices</h2>
+		<p>You can check your details in self-service and ask for corrections to your address, mobile number, emergency
+			contact or bank account; HR reviews each request. For anything else, including a copy of your data, contact your
+			HR team.</p>
+	</div>
+</div>
+</body>
+</html>

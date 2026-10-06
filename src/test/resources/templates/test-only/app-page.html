@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Employees', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/hr}">HR</a></li></th:block>
+<div th:fragment="content" class="card card-body">
+	<p>Directory content</p>
+</div>
+</body>
+</html>

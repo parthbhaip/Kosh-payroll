@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-- Form fields bound to the form's th:object, with label, help and inline errors from Bean Validation.
+     Use inside <form th:object="${form}">:
+       <div th:replace="~{fragments/form :: input(name='email', label='Work email', type='email', help='Payslips go here.')}"></div>
+     Parameters: name and label; optional: help, optional (true adds "(optional)" to the label), and per fragment
+     type and autocomplete (input), options as an ordered Map of value to label and placeholder (select), rows (textarea).
+     Help and errors are tied to the control with aria-describedby; an error also sets aria-invalid. -->
+<body>
+
+<div th:fragment="input" class="field"
+	th:with="invalid=${#fields.hasErrors(name)}, describedBy=${#strings.trim((help != null ? name + '-help ' : '') + (invalid ? name + '-error' : ''))}">
+	<label class="label" th:for="${name}">
+		<th:block th:text="${label}">Work email</th:block>
+		<span class="optional" th:if="${optional}">(optional)</span>
+	</label>
+	<input class="input" th:type="${type != null} ? ${type} : 'text'" th:id="${name}" th:field="*{__${name}__}"
+		th:attr="autocomplete=${autocomplete}, aria-describedby=${describedBy.isEmpty()} ? null : ${describedBy}, aria-invalid=${invalid} ? 'true' : null">
+	<p class="help" th:if="${help != null}" th:id="${name + '-help'}" th:text="${help}">Payslips go to this address.</p>
+	<p class="error-text" th:if="${invalid}" th:id="${name + '-error'}">
+		<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors(name), ' ')}">Enter a valid email.</span>
+	</p>
+</div>
+
+<div th:fragment="select" class="field"
+	th:with="invalid=${#fields.hasErrors(name)}, describedBy=${#strings.trim((help != null ? name + '-help ' : '') + (invalid ? name + '-error' : ''))}">
+	<label class="label" th:for="${name}">
+		<th:block th:text="${label}">Department</th:block>
+		<span class="optional" th:if="${optional}">(optional)</span>
+	</label>
+	<select class="select" th:id="${name}" th:field="*{__${name}__}"
+		th:attr="aria-describedby=${describedBy.isEmpty()} ? null : ${describedBy}, aria-invalid=${invalid} ? 'true' : null">
+		<option th:if="${placeholder != null}" value="" th:text="${placeholder}">Select a department</option>
+		<option th:each="option : ${options}" th:value="${option.key}" th:text="${option.value}">Production</option>
+	</select>
+	<p class="help" th:if="${help != null}" th:id="${name + '-help'}" th:text="${help}">Help</p>
+	<p class="error-text" th:if="${invalid}" th:id="${name + '-error'}">
+		<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors(name), ' ')}">Choose a department.</span>
+	</p>
+</div>
+
+<div th:fragment="textarea" class="field"
+	th:with="invalid=${#fields.hasErrors(name)}, describedBy=${#strings.trim((help != null ? name + '-help ' : '') + (invalid ? name + '-error' : ''))}">
+	<label class="label" th:for="${name}">
+		<th:block th:text="${label}">Reason</th:block>
+		<span class="optional" th:if="${optional}">(optional)</span>
+	</label>
+	<textarea class="textarea" th:id="${name}" th:field="*{__${name}__}" th:rows="${rows}"
+		th:attr="aria-describedby=${describedBy.isEmpty()} ? null : ${describedBy}, aria-invalid=${invalid} ? 'true' : null"></textarea>
+	<p class="help" th:if="${help != null}" th:id="${name + '-help'}" th:text="${help}">Help</p>
+	<p class="error-text" th:if="${invalid}" th:id="${name + '-error'}">
+		<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors(name), ' ')}">Enter a reason.</span>
+	</p>
+</div>
+
+</body>
+</html>

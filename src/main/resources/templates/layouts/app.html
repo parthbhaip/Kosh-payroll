@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!-- Layout for signed-in pages: sidebar for the user's roles (icons only from 960 to 1199px, a drawer below 960px),
+     top bar with breadcrumbs, page title, employee search, notifications and the user menu, the flash message and
+     the toast region. Menus and the drawer are native popovers, so they work without JavaScript; the menus carry
+     role="dialog" because ARIA ignores a name on a plain div.
+     Use: <html th:replace="~{layouts/app :: layout(title='Employees', crumbs=~{::crumbs}, content=~{::content})}">
+     crumbs: a th:block of <li><a th:href="…">…</a></li> for the pages above this one, or null; the current page is
+     added from the title. content: the page body. -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, crumbs, content)">
+<head th:replace="~{fragments/head :: head(title=${title}, extra=~{})}">
+	<title>Kosh</title>
+</head>
+<body class="app" th:with="shell=${@appShell.current()}">
+	<a class="skip-link" href="#main">Skip to content</a>
+	<div class="app-shell">
+		<aside class="sidebar" id="app-sidebar" popover>
+			<div class="sidebar-head">
+				<a class="sidebar-brand" th:href="@{/}">
+					<img class="logo-full" th:src="@{/img/logo.svg}" alt="Kosh home" width="104" height="32">
+					<img class="logo-mark" th:src="@{/img/favicon.svg}" alt="Kosh home" width="32" height="32">
+				</a>
+				<button class="btn btn-ghost btn-icon btn-sm sidebar-close" type="button" popovertarget="app-sidebar"
+					popovertargetaction="hide" aria-label="Close menu"><svg th:replace="~{fragments/icon :: icon('x')}"></svg></button>
+			</div>
+			<nav class="sidebar-nav" aria-label="Main">
+				<div class="nav-group" th:each="group, it : ${shell.nav()}">
+					<p class="nav-group-title" th:id="${'nav-group-' + it.index}" th:text="${group.title()}">People</p>
+					<ul class="nav-list" th:attr="aria-labelledby=${'nav-group-' + it.index}">
+						<li th:each="item : ${group.items()}">
+							<a class="nav-link" th:href="@{${item.href()}}" th:title="${item.label()}"
+								th:attr="aria-current=${item.active()} ? 'page'">
+								<svg th:replace="~{fragments/icon :: icon(${item.icon()})}"></svg>
+								<span class="nav-label" th:text="${item.label()}">Employees</span>
+							</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</aside>
+
+		<div class="app-body">
+			<header class="topbar">
+				<button class="btn btn-ghost btn-icon topbar-menu" type="button" popovertarget="app-sidebar"
+					aria-label="Open menu"><svg th:replace="~{fragments/icon :: icon('menu')}"></svg></button>
+				<div class="topbar-heading">
+					<th:block th:if="${crumbs != null}">
+						<nav class="breadcrumbs" aria-label="Breadcrumb">
+							<ol>
+								<th:block th:replace="${crumbs}"></th:block>
+								<li aria-current="page" th:text="${title}">Employees</li>
+							</ol>
+						</nav>
+					</th:block>
+					<h1 class="page-title" th:text="${title}">Employees</h1>
+				</div>
+				<form class="search topbar-search" th:if="${shell.searchAction() != null}" role="search" method="get"
+					th:action="@{${shell.searchAction()}}">
+					<label class="visually-hidden" for="employee-search">Search employees</label>
+					<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
+					<input class="input" id="employee-search" name="q" type="search" placeholder="Search employees"
+						autocomplete="off">
+				</form>
+				<div class="topbar-tools">
+					<button class="btn btn-ghost btn-icon topbar-bell" type="button" popovertarget="notifications-menu"
+						th:attr="aria-label=${shell.unreadNotifications() > 0} ? ${'Notifications, ' + shell.unreadNotifications() + ' unread'} : 'Notifications'">
+						<svg th:replace="~{fragments/icon :: icon('bell')}"></svg>
+						<span class="bell-count" id="notification-count" aria-hidden="true"
+							th:hidden="${shell.unreadNotifications() == 0}" th:text="${shell.unreadNotifications()}">0</span>
+					</button>
+					<div class="menu-panel" id="notifications-menu" popover role="dialog" aria-labelledby="notifications-title">
+						<p class="menu-title" id="notifications-title">Notifications</p>
+						<div class="menu-empty">
+							<svg th:replace="~{fragments/icon :: icon('check')}"></svg>
+							<p class="menu-empty-title">You’re all caught up</p>
+							<p class="menu-empty-text">Approval requests, published payslips and reminders show up here.</p>
+						</div>
+						<a class="menu-footer-link" th:if="${shell.notificationsHref() != null}"
+							th:href="@{${shell.notificationsHref()}}">View all notifications</a>
+					</div>
+
+					<button class="user-button" type="button" popovertarget="user-menu"
+						th:attr="aria-label=${'Account menu for ' + shell.user().name()}">
+						<span class="avatar" aria-hidden="true" th:text="${shell.user().initials()}">H</span>
+						<span class="user-button-name" aria-hidden="true" th:text="${shell.user().name()}">hr@kosh.test</span>
+						<svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg>
+					</button>
+					<div class="menu-panel" id="user-menu" popover role="dialog" aria-label="Account">
+						<div class="menu-user">
+							<p class="menu-user-name" th:text="${shell.user().name()}">hr@kosh.test</p>
+							<p class="visually-hidden">Your roles</p>
+							<ul class="role-list">
+								<li class="badge badge-info" th:each="role : ${shell.user().roles()}" th:text="${role}">HR</li>
+							</ul>
+						</div>
+						<a class="menu-item" th:if="${shell.profileHref() != null}" th:href="@{${shell.profileHref()}}">
+							<svg th:replace="~{fragments/icon :: icon('user')}"></svg>My profile</a>
+						<form th:action="@{/logout}" method="post">
+							<button class="menu-item" type="submit"><svg th:replace="~{fragments/icon :: icon('logout')}"></svg>Sign out</button>
+						</form>
+					</div>
+				</div>
+			</header>
+
+			<main class="page-content" id="main" tabindex="-1">
+				<th:block th:if="${flash != null}">
+					<div th:replace="~{fragments/ui :: flash(${flash})}"></div>
+				</th:block>
+				<th:block th:replace="${content}"></th:block>
+			</main>
+		</div>
+	</div>
+	<div class="toast-region" id="toast-region" aria-live="polite"></div>
+</body>
+</html>

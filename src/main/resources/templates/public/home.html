@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:replace="~{layouts/public :: layout(title='Payroll that closes on time', content=~{::content})}">
+<body>
+<th:block th:fragment="content">
+	<section class="hero" aria-labelledby="hero-title">
+		<div class="container hero-inner">
+			<div class="hero-copy">
+				<p class="eyebrow">Payroll and HR for Indian companies</p>
+				<h1 class="hero-title" id="hero-title">Payroll that closes on time.</h1>
+				<p class="hero-lede">Kosh takes each month from attendance to payslips in one place: salary structures,
+					PF, ESI, Maharashtra professional tax and TDS, bank transfer files and statutory returns. Every run is
+					checked by a second person before money moves.</p>
+				<div class="cluster hero-actions">
+					<a class="btn btn-primary" sec:authorize="!isAuthenticated()" th:href="@{/login}">Sign in to Kosh</a>
+					<a class="btn btn-secondary" href="#how-it-works">See how a payroll run works</a>
+				</div>
+			</div>
+			<figure class="hero-preview">
+				<div class="card">
+					<div class="card-header">
+						<div>
+							<p class="card-title">September 2026 payroll</p>
+							<p class="card-subtitle">148 employees · Pay day 30 Sep 2026</p>
+						</div>
+						<span class="badge" data-status="APPROVED">Approved</span>
+					</div>
+					<dl class="preview-figures">
+						<div>
+							<dt>Gross pay</dt>
+							<dd>₹74,10,250.00</dd>
+						</div>
+						<div>
+							<dt>Deductions</dt>
+							<dd>₹11,61,934.50</dd>
+						</div>
+						<div class="preview-net">
+							<dt>Net pay</dt>
+							<dd>₹62,48,315.50</dd>
+						</div>
+					</dl>
+					<ol class="preview-steps">
+						<li class="is-done"><svg th:replace="~{fragments/icon :: icon('check')}"></svg>Inputs locked by Payroll</li>
+						<li class="is-done"><svg th:replace="~{fragments/icon :: icon('check')}"></svg>Calculated, 0 exceptions</li>
+						<li class="is-done"><svg th:replace="~{fragments/icon :: icon('check')}"></svg>Approved by Finance</li>
+						<li><svg th:replace="~{fragments/icon :: icon('bank')}"></svg>Bank file ready to send</li>
+					</ol>
+				</div>
+				<figcaption>An example run. The person who submits a run can never approve it.</figcaption>
+			</figure>
+		</div>
+	</section>
+
+	<section class="section" id="features" aria-labelledby="features-title">
+		<div class="container">
+			<div class="section-head">
+				<h2 id="features-title">Everything a payroll month needs</h2>
+				<p>One system for HR, payroll, finance, managers and every employee, with each person seeing only what their
+					role allows.</p>
+			</div>
+			<ul class="feature-grid">
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('users')}"></svg></span>
+					<h3>Employees and salary structures</h3>
+					<p>Job, statutory and bank details in one record, with PAN and account numbers encrypted. Salary revisions
+						are effective-dated and approved by a second HR user.</p>
+				</li>
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('calendar')}"></svg></span>
+					<h3>Attendance and leave</h3>
+					<p>Leave accrues every month and managers approve requests for their own team. Closing the month works out
+						paid days and loss-of-pay days for payroll.</p>
+				</li>
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('rupee')}"></svg></span>
+					<h3>Statutory deductions</h3>
+					<p>PF, ESI, professional tax and TDS under both tax regimes, calculated from effective-dated rate tables
+						that an administrator updates when the law changes.</p>
+				</li>
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('shield')}"></svg></span>
+					<h3>Maker-checker approval</h3>
+					<p>Payroll submits a run and Finance approves it. Nobody approves their own work, and every change of state
+						is recorded with who made it and when.</p>
+				</li>
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('receipt')}"></svg></span>
+					<h3>Payslips and self-service</h3>
+					<p>Employees download payslips, choose a tax regime, declare investments and claim reimbursements from their
+						phone, without emailing HR.</p>
+				</li>
+				<li class="card feature">
+					<span class="feature-icon"><svg th:replace="~{fragments/icon :: icon('file-text')}"></svg></span>
+					<h3>Compliance and bank files</h3>
+					<p>PF ECR, ESI contribution sheets, professional tax summaries, TDS statements and bank transfer files,
+						prepared for filing and checked before upload.</p>
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="section section-surface" id="how-it-works" aria-labelledby="how-title">
+		<div class="container">
+			<div class="section-head">
+				<h2 id="how-title">How a payroll run works</h2>
+				<p>Four steps, each one owned by a named person and recorded in the audit log.</p>
+			</div>
+			<ol class="run-steps">
+				<li class="run-step">
+					<h3>Close attendance and lock inputs</h3>
+					<p>HR closes the month’s attendance. Payroll adds overtime, bonuses and one-off deductions, then locks the
+						inputs.</p>
+				</li>
+				<li class="run-step">
+					<h3>Calculate and review</h3>
+					<p>Kosh calculates every payslip and flags what needs attention: missing bank details, missing PAN, large
+						changes from last month.</p>
+				</li>
+				<li class="run-step">
+					<h3>Approve</h3>
+					<p>Payroll submits the run and Finance approves or rejects it with a comment. Approval freezes the payslips
+						exactly as calculated.</p>
+				</li>
+				<li class="run-step">
+					<h3>Pay and file</h3>
+					<p>Payslips reach employees, the bank file goes to the bank, and the PF, ESI, PT and TDS files are ready
+						before their due dates.</p>
+				</li>
+			</ol>
+		</div>
+	</section>
+
+	<section class="compliance-strip" aria-labelledby="compliance-title">
+		<div class="container">
+			<h2 class="visually-hidden" id="compliance-title">Statutory compliance</h2>
+			<ul class="compliance-grid">
+				<li>
+					<p class="compliance-code">PF</p>
+					<p class="compliance-name">Provident Fund</p>
+					<p class="compliance-text">Employee and employer shares, EPS and EDLI, and the monthly ECR file.</p>
+				</li>
+				<li>
+					<p class="compliance-code">ESI</p>
+					<p class="compliance-name">Employees’ State Insurance</p>
+					<p class="compliance-text">Coverage tracked by contribution period, both shares and the monthly return.</p>
+				</li>
+				<li>
+					<p class="compliance-code">PT</p>
+					<p class="compliance-name">Professional tax</p>
+					<p class="compliance-text">Maharashtra slabs by gender, the February adjustment and the annual cap.</p>
+				</li>
+				<li>
+					<p class="compliance-code">TDS</p>
+					<p class="compliance-name">Tax on salary</p>
+					<p class="compliance-text">New and old regime, monthly deduction and the annual statement for each
+						employee.</p>
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="section" aria-labelledby="cta-title">
+		<div class="container">
+			<div class="card cta-band">
+				<div>
+					<h2 id="cta-title">Work at a company that runs on Kosh?</h2>
+					<p>Sign in with your work email to see your payslips, apply for leave and send your tax declarations.</p>
+				</div>
+				<a class="btn btn-primary" sec:authorize="!isAuthenticated()" th:href="@{/login}">Sign in</a>
+				<a class="btn btn-secondary" sec:authorize="isAuthenticated()" th:href="@{/help}">Read the help pages</a>
+			</div>
+		</div>
+	</section>
+</th:block>
+</body>
+</html>

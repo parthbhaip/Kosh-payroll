@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-- Shared page components. Styles: static/css/app.css. Records are read with accessor calls (item.title()).
+     Fragments without a signature take named parameters; the ones marked optional may be left out.
+     Thymeleaf 3.1 runs th:href and th:src in restricted mode (no @bean calls, no param), so links built by @links
+     go through th:with first. -->
+<body>
+
+<!-- Flash message after a redirect. flash: com.kosh.web.Flash. The app layout shows ${flash} on its own. -->
+<div th:fragment="flash(flash)" class="flash" th:classappend="${'flash-' + flash.kind().css()}"
+	th:attr="role=${flash.kind().name() == 'DANGER'} ? 'alert' : 'status'">
+	<svg th:replace="~{fragments/icon :: icon(${flash.kind().icon()})}"></svg>
+	<div>
+		<p class="flash-title" th:text="${flash.title()}">September payroll is ready for approval</p>
+		<p class="flash-text" th:if="${flash.text() != null}" th:text="${flash.text()}">Calculated for 148 employees.</p>
+	</div>
+</div>
+
+<!-- Toast for an htmx response: appended to the layout's aria-live #toast-region out of band. flash: com.kosh.web.Flash. -->
+<div th:fragment="toast(flash)" hx-swap-oob="beforeend:#toast-region">
+	<div class="toast" th:classappend="${'toast-' + flash.kind().css()}">
+		<svg th:replace="~{fragments/icon :: icon(${flash.kind().icon()})}"></svg>
+		<div>
+			<p class="flash-title" th:text="${flash.title()}">Draft saved</p>
+			<p class="flash-text" th:if="${flash.text() != null}" th:text="${flash.text()}"></p>
+		</div>
+	</div>
+</div>
+
+<!-- Empty state. image: people | documents | search | inbox; action (optional): a fragment with a button or link. -->
+<div th:fragment="empty" class="empty-state">
+	<img th:src="@{/img/empty/{name}.svg(name=${image})}" alt="" width="160" height="120">
+	<h2 class="empty-title" th:text="${title}">No employees yet</h2>
+	<p class="empty-text" th:text="${text}">Add your first employee to start running payroll.</p>
+	<th:block th:if="${action != null}">
+		<div class="cluster" th:insert="${action}"></div>
+	</th:block>
+</div>
+
+<!-- Money: ₹1,23,456.50, tabular, negatives in the danger colour. moneyCell is the same as a table cell. -->
+<span th:fragment="money(amount)" class="num" th:classappend="${amount != null and amount.signum() < 0} ? 'neg'"
+	th:text="${@fmt.money(amount)}">₹0.00</span>
+<td th:fragment="moneyCell(amount)" class="num" th:classappend="${amount != null and amount.signum() < 0} ? 'neg'"
+	th:text="${@fmt.money(amount)}">₹0.00</td>
+
+<!-- Status badge, coloured by data-status in app.css. status: an enum or its name;
+     label (optional): defaults to the name in sentence case (ON_NOTICE -> On notice). -->
+<span th:fragment="badge" class="badge" th:attr="data-status=${status}"
+	th:text="${label != null} ? ${label} : ${#strings.capitalize(#strings.toLowerCase(#strings.replace(status, '_', ' ')))}">Active</span>
+
+<!-- Stat card. icon: sprite name; meta (optional): a line under the value. -->
+<div th:fragment="stat" class="card stat">
+	<p class="stat-label"><svg th:replace="~{fragments/icon :: icon(${icon})}"></svg><span th:text="${label}">Employees paid</span></p>
+	<p class="stat-value" th:text="${value}">148</p>
+	<p class="stat-meta" th:if="${meta != null}" th:text="${meta}">3 joiners this month</p>
+</div>
+
+<!-- Sortable column header. property: the Spring Data sort property; sort: the page's Sort;
+     numeric (optional): right-aligns the column. Clicking sorts ascending, then descending; paging restarts. -->
+<th th:fragment="sortHeader" scope="col" th:class="${numeric} ? 'num'"
+	th:with="order=${sort != null} ? ${sort.getOrderFor(property)} : null"
+	th:attr="aria-sort=${order == null} ? null : (${order.ascending} ? 'ascending' : 'descending')">
+	<a class="sort" th:with="href=${@links.sort(property, (order != null and order.ascending) ? 'desc' : 'asc')}"
+		th:href="${href}">
+		<span th:text="${label}">Employee</span><svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg>
+	</a>
+</th>
+
+<!-- Pagination for a Spring Data Page. noun: "employees"; label: names the navigation landmark. Links keep the
+     current search, filters and sort. Shows nothing for an empty page. -->
+<nav th:fragment="pagination(page, noun, label)" class="pagination" th:if="${page.totalElements > 0}"
+	th:attr="aria-label=${label}">
+	<p>Showing <strong th:text="${page.number * page.size + 1} + '–' + ${page.number * page.size + page.numberOfElements}">1–25</strong>
+		of <strong th:text="${page.totalElements}">152</strong> <span th:text="${noun}">employees</span></p>
+	<ul th:if="${page.totalPages > 1}">
+		<li th:if="${page.first}"><span class="page-link page-prev" aria-disabled="true"><svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg>Previous</span></li>
+		<li th:unless="${page.first}" th:with="href=${@links.page(page.number - 1)}"><a class="page-link page-prev" th:href="${href}" rel="prev"><svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg>Previous</a></li>
+		<th:block th:each="n : ${@links.pageWindow(page)}">
+			<li class="page-number" th:if="${n < 0}"><span class="page-link" aria-hidden="true">…</span></li>
+			<li th:if="${n >= 0}" th:class="${n == page.number} ? null : 'page-number'" th:with="href=${@links.page(n)}">
+				<a class="page-link" th:href="${href}" th:text="${n + 1}"
+					th:attr="aria-current=${n == page.number} ? 'page', aria-label=${'Page ' + (n + 1)}">1</a>
+			</li>
+		</th:block>
+		<li th:if="${page.last}"><span class="page-link" aria-disabled="true">Next<svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg></span></li>
+		<li th:unless="${page.last}" th:with="href=${@links.page(page.number + 1)}"><a class="page-link" th:href="${href}" rel="next">Next<svg th:replace="~{fragments/icon :: icon('chevron-right')}"></svg></a></li>
+	</ul>
+</nav>
+
+<!-- Stepper for multi-step flows. steps: list of labels; current: 1-based number of the current step. -->
+<ol th:fragment="stepper(label, steps, current)" class="stepper" th:attr="aria-label=${label}">
+	<li th:each="step, it : ${steps}" class="step" th:classappend="${it.count < current} ? 'is-complete'"
+		th:attr="aria-current=${it.count == current} ? 'step'">
+		<span class="step-marker"><svg th:replace="~{fragments/icon :: icon('check')}"></svg></span>
+		<span class="step-label"><span class="visually-hidden" th:if="${it.count < current}">Completed: </span><span th:text="${step}">Personal</span></span>
+	</li>
+</ol>
+
+<!-- Timeline, oldest first. items: objects with title(), meta() and optional body() and tone()
+     (info | success | warning | danger). -->
+<ol th:fragment="timeline(items)" class="timeline">
+	<li th:each="item : ${items}" class="timeline-item" th:classappend="${item.tone() != null} ? ${'is-' + item.tone()}">
+		<p class="timeline-title" th:text="${item.title()}">Draft created</p>
+		<p class="timeline-meta" th:text="${item.meta()}">Priya Joshi, Payroll · 25 Sep 2026, 10:12 AM</p>
+		<p class="timeline-body" th:if="${item.body() != null}" th:text="${item.body()}">Overtime is missing.</p>
+	</li>
+</ol>
+
+<!-- Description list for read-only details. entries: an ordered Map of label to value; a missing value shows "—". -->
+<dl th:fragment="dl(entries)" class="dl">
+	<th:block th:each="entry : ${entries}">
+		<dt th:text="${entry.key}">Department</dt>
+		<dd th:text="${#strings.isEmpty(entry.value)} ? '—' : ${entry.value}">Production</dd>
+	</th:block>
+</dl>
+
+</body>
+</html>

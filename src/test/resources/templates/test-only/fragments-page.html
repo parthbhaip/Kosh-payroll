@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Fragments', crumbs=null, content=~{::content})}">
+<body>
+<div th:fragment="content" class="stack">
+	<form class="card card-body form-grid" th:object="${form}" method="post" th:action="@{/test-only/fragments}">
+		<div th:replace="~{fragments/form :: input(name='email', label='Work email', type='email', help='Payslips go to this address.', autocomplete='email')}"></div>
+		<div th:replace="~{fragments/form :: select(name='department', label='Department', options=${departments}, placeholder='Select a department')}"></div>
+		<div th:replace="~{fragments/form :: textarea(name='note', label='Note', optional=true, rows=3)}"></div>
+	</form>
+
+	<div class="card">
+		<div class="table-wrap">
+			<table class="table">
+				<caption>Employees</caption>
+				<thead>
+					<tr>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Employee', property='name', sort=${page.sort})}"></th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Net pay', property='net', sort=${page.sort}, numeric=true)}"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="row : ${page.content}">
+						<th scope="row" th:text="${row}">Employee 1</th>
+						<td th:replace="~{fragments/ui :: moneyCell(${net})}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<nav th:replace="~{fragments/ui :: pagination(${page}, 'employees', 'Employee pages')}"></nav>
+	</div>
+
+	<p>Adjustment <span th:replace="~{fragments/ui :: money(${adjustment})}"></span></p>
+	<p><span th:replace="~{fragments/ui :: badge(status='ON_NOTICE')}"></span>
+		<span th:replace="~{fragments/ui :: badge(status='PAID', label='Paid on 30 Sep 2026')}"></span></p>
+	<div th:replace="~{fragments/ui :: stat(icon='users', label='Employees paid', value='148', meta='3 joiners this month')}"></div>
+	<div th:replace="~{fragments/ui :: empty(image='search', title='No employees match these filters', text='Try another name or employee code.', action=~{::clear-filters})}"></div>
+	<div th:replace="~{fragments/ui :: empty(image='inbox', title='You’re all caught up', text='No requests are waiting for you.')}"></div>
+	<ol th:replace="~{fragments/ui :: stepper('Add employee', ${steps}, 3)}"></ol>
+	<ol th:replace="~{fragments/ui :: timeline(${timeline})}"></ol>
+	<dl th:replace="~{fragments/ui :: dl(${details})}"></dl>
+</div>
+<a class="btn btn-secondary" th:fragment="clear-filters" th:href="@{/test-only/fragments}">Clear filters</a>
+</body>
+</html>
