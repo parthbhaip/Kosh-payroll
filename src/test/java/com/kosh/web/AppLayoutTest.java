@@ -94,10 +94,11 @@ class AppLayoutTest {
 	@Test
 	@WithMockUser(username = "admin@kosh.test", roles = "ADMIN")
 	void adminSeesSettingsAndEveryOfficeAreaButNoSelfService() throws Exception {
-		String page = render(get("/admin/users"), "test-only/app-page");
+		String page = render(get("/admin/statutory"), "test-only/app-page");
 
 		assertThat(page).contains(">Settings</p>")
-			.contains("<a class=\"nav-link\" href=\"/admin/users\" title=\"Users and roles\" aria-current=\"page\">")
+			.contains("<a class=\"nav-link\" href=\"/admin/statutory\" title=\"Statutory rules\" aria-current=\"page\">")
+			.contains("<a class=\"nav-link\" href=\"/admin/users\" title=\"Users and roles\">")
 			.contains("href=\"/hr/employees\"")
 			.contains("href=\"/payroll/runs\"")
 			.contains("<li class=\"badge badge-info\">Admin</li>")

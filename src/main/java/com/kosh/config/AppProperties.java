@@ -71,7 +71,8 @@ public record AppProperties(
 	}
 
 	/**
-	 * @param transport LOG writes e-mails to the application log (dev, test); SMTP sends them (mysql)
+	 * @param transport LOG writes e-mails to the application log (dev, test; the body only at DEBUG); SMTP sends them
+	 * (mysql)
 	 * @param from sender address on every e-mail
 	 */
 	public record Mail(@NotNull Transport transport, @NotBlank @Email String from) {

@@ -20,8 +20,11 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.RememberMeAuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -30,8 +33,10 @@ import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.session.SessionLimit;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import com.kosh.common.HmacHasher;
 import com.kosh.user.Role;
@@ -40,9 +45,12 @@ import com.kosh.user.Role;
  * Web security: public pages, sign-in, password links and static assets open to everyone, each {@link Area} limited
  * to its roles, everything else for signed-in users. Form sign-in by e-mail lands on the home of the user's highest
  * role ({@link Landing}); sign-out is a POST. Headers per CLAUDE.md > Security rules; Spring Security adds
- * {@code nosniff}, {@code X-Frame-Options: DENY} and no-cache headers by default.
+ * {@code nosniff}, {@code X-Frame-Options: DENY} and no-cache headers by default. Services check roles a second time
+ * with {@code @PreAuthorize}. Every signed-in session is registered, so disabling a user or changing their roles can
+ * end their sessions ({@link #ENDED_URL}).
  */
 @Configuration(proxyBeanMethods = false)
+@EnableMethodSecurity
 public class SecurityConfig {
 
 	/** No inline scripts or {@code eval}; inline styles stay allowed for SVG and the occasional style attribute. */
@@ -56,9 +64,12 @@ public class SecurityConfig {
 	/** How long "Keep me signed in" lasts. */
 	public static final int REMEMBER_ME_DAYS = 14;
 
+	/** Where a session ended by an admin (account disabled, roles changed) goes on its next request. */
+	static final String ENDED_URL = "/login?ended";
+
 	@Bean
 	SecurityFilterChain webSecurity(HttpSecurity http, AuthenticationManager authenticationManager,
-			KoshUserDetailsService users, HmacHasher hasher) throws Exception {
+			KoshUserDetailsService users, HmacHasher hasher, SessionRegistry sessionRegistry) throws Exception {
 		http.authorizeHttpRequests(requests -> {
 			requests.requestMatchers(HttpMethod.GET, "/", "/privacy", "/terms", "/help", "/login").permitAll();
 			// Set-password (invite) and forgot/reset-password pages reached from e-mailed links. Pages for
@@ -82,6 +93,10 @@ public class SecurityConfig {
 				.userDetailsService(users)
 				.tokenValiditySeconds((int) Duration.ofDays(REMEMBER_ME_DAYS).toSeconds()))
 			.logout(logout -> logout.logoutSuccessUrl("/login?logout").deleteCookies("JSESSIONID"))
+			.sessionManagement(sessions -> sessions.sessionConcurrency(concurrency -> concurrency
+				.maximumSessions(SessionLimit.UNLIMITED)
+				.sessionRegistry(sessionRegistry)
+				.expiredUrl(ENDED_URL)))
 			.exceptionHandling(exceptions -> exceptions.accessDeniedHandler(accessDeniedHandler()))
 			.headers(headers -> headers.contentSecurityPolicy(csp -> csp.policyDirectives(CONTENT_SECURITY_POLICY))
 				.referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.SAME_ORIGIN)));
@@ -128,6 +143,20 @@ public class SecurityConfig {
 		ProviderManager manager = new ProviderManager(passwords, new RememberMeAuthenticationProvider(rememberMeKey(hasher)));
 		manager.setAuthenticationEventPublisher(events);
 		return manager;
+	}
+
+	/**
+	 * Signed-in sessions per user, in memory (one application instance), from form and remember-me sign-ins. The
+	 * session event publisher removes sessions that end or time out.
+	 */
+	@Bean
+	SessionRegistry sessionRegistry() {
+		return new SessionRegistryImpl();
+	}
+
+	@Bean
+	HttpSessionEventPublisher httpSessionEventPublisher() {
+		return new HttpSessionEventPublisher();
 	}
 
 	/** BCrypt, stored with its {@code {bcrypt}} prefix so the algorithm can change later without a reset. */

@@ -623,6 +623,10 @@ kbd,
 	grid-column: 1 / -1;
 }
 
+.form-grid + .form-actions {
+	margin-top: var(--space-5);
+}
+
 .form-actions {
 	display: flex;
 	flex-wrap: wrap;
@@ -762,7 +766,8 @@ kbd,
 
 .badge-info,
 .badge[data-status="INPUTS_LOCKED"],
-.badge[data-status="CALCULATED"] {
+.badge[data-status="CALCULATED"],
+.badge[data-status="INVITED"] {
 	--badge-fg: var(--color-primary);
 	--badge-bg: var(--color-primary-tint);
 }
@@ -784,7 +789,8 @@ kbd,
 .badge-warning,
 .badge[data-status="SUBMITTED"],
 .badge[data-status="REOPENED"],
-.badge[data-status="ON_NOTICE"] {
+.badge[data-status="ON_NOTICE"],
+.badge[data-status="LOCKED"] {
 	--badge-fg: var(--color-warning);
 	--badge-bg: var(--color-warning-tint);
 }
@@ -977,6 +983,20 @@ kbd,
 	display: block;
 	font-size: var(--text-xs);
 	color: var(--color-text-muted);
+}
+
+/* The row's name links to its record; the link reads as the title until hovered. */
+a.cell-title {
+	text-decoration: none;
+}
+
+a.cell-title:hover {
+	color: var(--color-primary);
+	text-decoration: underline;
+}
+
+.table .role-list {
+	margin: 0;
 }
 
 /* Sortable header: <th aria-sort="ascending"><a class="sort" href="?sort=name,desc">Name <svg class="icon">…</svg></a></th> */
@@ -2816,6 +2836,15 @@ a.page-link:not([aria-current]):hover {
 	width: 100%;
 }
 
+/* A card with only text and one action (e.g. a link that no longer works). */
+.auth-lede + .auth-lede {
+	margin-top: var(--space-3);
+}
+
+.auth-card > .auth-submit {
+	margin-top: var(--space-6);
+}
+
 .auth-foot {
 	margin-top: var(--space-6);
 	padding-top: var(--space-5);
@@ -3046,5 +3075,54 @@ a.page-link:not([aria-current]):hover {
 	.nav-link,
 	.faq-item summary .icon {
 		transition: none;
+	}
+}
+
+/* ---------------------------------------------------------------- Record pages (list toolbar, detail columns) */
+/* A line about the page and its main action, above the first card. */
+.page-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+}
+
+.page-toolbar p {
+	max-width: 64ch;
+	color: var(--color-text-secondary);
+}
+
+/* A record's main form beside its summary and actions; one column below 1200px. */
+.detail-layout {
+	display: grid;
+	gap: var(--space-6);
+	align-items: start;
+}
+
+.detail-side {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-6);
+}
+
+.action-block + .action-block {
+	padding-top: var(--space-4);
+	border-top: 1px solid var(--color-divider);
+}
+
+.action-block p {
+	margin-bottom: var(--space-3);
+	font-size: var(--text-sm);
+	color: var(--color-text-secondary);
+}
+
+.action-block .help {
+	margin: var(--space-2) 0 0;
+}
+
+@media (min-width: 1200px) {
+	.detail-layout {
+		grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
 	}
 }

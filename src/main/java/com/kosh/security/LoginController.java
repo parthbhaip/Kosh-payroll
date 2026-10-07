@@ -12,16 +12,21 @@ import com.kosh.web.Flash;
 /**
  * The sign-in page (Spring Security processes its POST) and {@code /home}, which sends a signed-in user to the home
  * of their highest role. A signed-in user who opens the sign-in page goes home too, told that their form expired when
- * a stale CSRF token sent them here ({@code ?expired}).
+ * a stale CSRF token sent them here ({@code ?expired}). {@code ?ended}: an admin disabled the account or changed its
+ * roles, which ends the user's sessions ({@link SecurityConfig#ENDED_URL}); ending one also cancels the remember-me
+ * cookie, so the user arrives signed out and signs in again with a password.
  */
 @Controller
 class LoginController {
 
 	static final String STALE_FORM = "That form had expired, so nothing was saved. Try again.";
 
+	static final String SESSION_ENDED = "Your account was changed, so you were signed out. Sign in again to continue.";
+
 	@GetMapping("/login")
 	String login(Authentication authentication, Model model, RedirectAttributes redirect,
-			@RequestParam(required = false) String logout, @RequestParam(required = false) String expired) {
+			@RequestParam(required = false) String logout, @RequestParam(required = false) String expired,
+			@RequestParam(required = false) String ended) {
 		if (authentication != null) {
 			if (expired != null) {
 				// A stale form from a signed-in user (another tab, or a session renewed by remember-me).
@@ -35,6 +40,9 @@ class LoginController {
 		}
 		else if (expired != null) {
 			model.addAttribute("notice", Flash.warning("Your session expired. Sign in again to continue."));
+		}
+		else if (ended != null) {
+			model.addAttribute("notice", Flash.warning(SESSION_ENDED));
 		}
 		else if (logout != null) {
 			model.addAttribute("notice", Flash.success("You’ve signed out."));

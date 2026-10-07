@@ -55,7 +55,7 @@ How this file works
   - Custom login page (email, password with show/hide, remember me), POST logout, landing by highest role (ADMIN -> /admin, HR -> /hr, PAYROLL -> /payroll, FINANCE -> /finance, else /me), `UserDetailsService`, disabled users rejected, CSP and headers from CLAUDE.md.
   - Tests: anonymous redirected; each role 403 outside its areas; multi-role user reaches each of its areas; landing by role.
 
-- [ ] T08 User administration
+- [x] T08 User administration
   - `/admin/users`: list with search and role filter; invite user (email + roles) sends a set-password link (token hashed, 48 h expiry, single use); edit roles; enable/disable. Never disable yourself or remove the last ADMIN.
   - `MailService` interface: `LoggingMailService` (dev/test) and `SmtpMailService` (mysql). Tests.
 

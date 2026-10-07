@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Users and roles', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/admin}">Admin</a></li></th:block>
+<th:block th:fragment="content">
+	<div class="page-toolbar">
+		<p>Everyone who can sign in to Kosh. Roles decide which workspaces and records each person sees.</p>
+		<a class="btn btn-primary" th:href="@{/admin/users/invite}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Invite user</a>
+	</div>
+
+	<div class="card">
+		<form class="filter-bar" method="get" th:action="@{/admin/users}" role="search" aria-label="Filter users">
+			<div class="field field-search">
+				<label class="label" for="user-search">Search</label>
+				<div class="search">
+					<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
+					<input class="input" id="user-search" name="q" type="search" maxlength="100" placeholder="Name or email"
+						autocomplete="off" th:value="${q}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label" for="user-role">Role</label>
+				<select class="select" id="user-role" name="role">
+					<option value="">All roles</option>
+					<option th:each="option : ${allRoles}" th:value="${option.name()}" th:text="${option.label()}"
+						th:selected="${option == role}">HR</option>
+				</select>
+			</div>
+			<div class="filter-actions">
+				<a class="btn btn-ghost" th:if="${filtered}" th:href="@{/admin/users}">Clear</a>
+				<button class="btn btn-secondary" type="submit"><svg th:replace="~{fragments/icon :: icon('filter')}"></svg>Apply</button>
+			</div>
+		</form>
+
+		<div class="table-wrap" th:unless="${page.empty}">
+			<table class="table">
+				<caption class="visually-hidden">Users</caption>
+				<thead>
+					<tr>
+						<th th:replace="~{fragments/ui :: sortHeader(label='User', property='displayName', sort=${sort})}"></th>
+						<th scope="col">Roles</th>
+						<th scope="col">Status</th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Last sign-in', property='lastLoginAt', sort=${sort})}"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="row : ${page.content}">
+						<th scope="row">
+							<a class="cell-title" th:href="@{/admin/users/{id}(id=${row.id()})}" th:text="${row.name()}">Meera Deshpande</a>
+							<span class="cell-sub" th:text="${row.email()}">meera.deshpande@panchganga.in</span>
+						</th>
+						<td>
+							<ul class="role-list">
+								<li class="badge" th:each="granted : ${row.roles()}" th:text="${granted.label()}">HR</li>
+							</ul>
+						</td>
+						<td><span th:replace="~{fragments/ui :: badge(status=${row.status().name()}, label=${row.status().label()})}"></span></td>
+						<td th:text="${row.lastLoginAt() != null} ? ${@fmt.relative(row.lastLoginAt())} : 'Never'">2 hours ago</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<th:block th:if="${page.empty and filtered}">
+			<div th:replace="~{fragments/ui :: empty(image='search', title='No users match these filters', text='Try another name or email, or choose All roles.', action=~{::clear-filters})}"></div>
+		</th:block>
+		<th:block th:if="${page.empty and !filtered}">
+			<div th:replace="~{fragments/ui :: empty(image='people', title='No users yet', text='Invite the people who run payroll and HR. Each one gets a link to set a password.', action=~{::invite-action})}"></div>
+		</th:block>
+
+		<nav th:replace="~{fragments/ui :: pagination(${page}, 'users', 'User list pages')}"></nav>
+	</div>
+</th:block>
+<a class="btn btn-secondary" th:fragment="clear-filters" th:href="@{/admin/users}">Clear filters</a>
+<a class="btn btn-primary" th:fragment="invite-action" th:href="@{/admin/users/invite}">Invite user</a>
+</body>
+</html>

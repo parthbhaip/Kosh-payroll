@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Invite user', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/admin}">Admin</a></li>
+	<li><a th:href="@{/admin/users}">Users and roles</a></li>
+</th:block>
+<th:block th:fragment="content">
+	<form class="card" method="post" th:action="@{/admin/users/invite}" th:object="${form}" aria-labelledby="invite-title" novalidate>
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="invite-title">Who are you inviting?</h2>
+				<p class="card-subtitle">They get an email with a link to set their password. The link works once, for 48 hours.</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<div class="form-grid">
+				<div th:replace="~{fragments/form :: input(name='displayName', label='Full name', autocomplete='off')}"></div>
+				<div th:replace="~{fragments/form :: input(name='email', label='Work email', type='email', autocomplete='off', help='They sign in with this address.')}"></div>
+				<fieldset th:replace="~{admin/users/parts :: roles}"></fieldset>
+			</div>
+			<div class="form-actions">
+				<a class="btn btn-ghost" th:href="@{/admin/users}">Cancel</a>
+				<button class="btn btn-primary" type="submit"><svg th:replace="~{fragments/icon :: icon('send')}"></svg>Send invite</button>
+			</div>
+		</div>
+	</form>
+</th:block>
+</body>
+</html>

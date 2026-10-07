@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!-- Pieces shared by the invite and edit pages. Use inside the form's th:object; needs ${allRoles}. -->
+<body>
+
+<!-- Role checkboxes with what each role opens, and the roles error. -->
+<fieldset th:fragment="roles" class="fieldset span-all" th:with="invalid=${#fields.hasErrors('roles')}"
+	th:attr="aria-describedby=${invalid} ? 'roles-error'">
+	<legend>Roles</legend>
+	<label class="check" th:each="option : ${allRoles}">
+		<input class="checkbox" type="checkbox" th:field="*{roles}" th:value="${option.name()}"
+			th:attr="aria-describedby=${'role-help-' + option.name()}">
+		<span class="check-text"><th:block th:text="${option.label()}">HR</th:block>
+			<span class="help" th:id="${'role-help-' + option.name()}" th:text="${option.summary()}">Employees and salary structures.</span>
+		</span>
+	</label>
+	<p class="error-text" id="roles-error" th:if="${invalid}">
+		<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('roles'), ' ')}">Choose at least one role.</span>
+	</p>
+</fieldset>
+
+</body>
+</html>

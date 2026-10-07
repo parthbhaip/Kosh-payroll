@@ -10,18 +10,31 @@ import org.springframework.security.core.GrantedAuthority;
 /** What a user may do in Kosh (CLAUDE.md > Roles). One user can hold several; everyone who works there is an EMPLOYEE. */
 public enum Role {
 
-	ADMIN("Admin"), HR("HR"), PAYROLL("Payroll"), FINANCE("Finance"), MANAGER("Manager"), EMPLOYEE("Employee");
+	ADMIN("Admin", "Company settings, users and roles, statutory rules and the audit log."),
+	HR("HR", "Employees, salary structures, leave and attendance policies, exits and declarations."),
+	PAYROLL("Payroll", "Monthly payroll runs, payslips and statutory compliance files."),
+	FINANCE("Finance", "Approves payroll, prepares bank files and marks payroll paid."),
+	MANAGER("Manager", "Approves leave, attendance and claims for their own team. Never sees salaries."),
+	EMPLOYEE("Employee", "Own payslips, tax declarations, leave and attendance. Everyone who works here has it.");
 
 	private static final String PREFIX = "ROLE_";
 
 	private final String label;
 
-	Role(String label) {
+	private final String summary;
+
+	Role(String label, String summary) {
 		this.label = label;
+		this.summary = summary;
 	}
 
 	public String label() {
 		return label;
+	}
+
+	/** What the role lets a user do, for the role pickers. */
+	public String summary() {
+		return summary;
 	}
 
 	/** The Spring Security authority, {@code ROLE_HR}. */

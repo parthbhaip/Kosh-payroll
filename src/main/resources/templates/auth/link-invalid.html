@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/public :: layout(title='Link no longer works', content=~{::content})}">
+<body>
+<div class="auth-main" th:fragment="content">
+	<section class="card auth-card" aria-labelledby="link-title">
+		<h1 class="auth-title" id="link-title">This link no longer works</h1>
+		<p class="auth-lede">Password links work once, and only for a limited time. This one has expired, has already been
+			used, or was replaced by a newer email.</p>
+		<p class="auth-lede">Ask your Kosh administrator to send you a new invite. If you already set a password, sign in
+			with it.</p>
+		<a class="btn btn-primary auth-submit" th:href="@{/login}">Go to sign in</a>
+	</section>
+</div>
+</body>
+</html>
