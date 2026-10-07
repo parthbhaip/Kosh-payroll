@@ -54,6 +54,9 @@ With the loop stopped:
 ```
 Open http://localhost:8080. After T20, sign in with the demo accounts (password `Demo@1234` for all):
 `admin@kosh.test`, `hr@kosh.test`, `payroll@kosh.test`, `finance@kosh.test`, `manager@kosh.test`, `employee@kosh.test`.
+Before T20 (or on a database without demo data) nobody can sign in as admin yet: set `$env:ADMIN_EMAIL` and
+`$env:ADMIN_PASSWORD` (8 to 64 characters) before starting, sign in with them, then remove both. They only act while no
+active admin exists.
 After T46 there are six months of payroll history (April-September 2026), so dashboards and reports have data.
 Press Ctrl+C to stop the server before restarting the loop.
 

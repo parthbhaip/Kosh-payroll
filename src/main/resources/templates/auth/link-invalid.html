@@ -7,9 +7,17 @@
 		<h1 class="auth-title" id="link-title">This link no longer works</h1>
 		<p class="auth-lede">Password links work once, and only for a limited time. This one has expired, has already been
 			used, or was replaced by a newer email.</p>
-		<p class="auth-lede">Ask your Kosh administrator to send you a new invite. If you already set a password, sign in
-			with it.</p>
-		<a class="btn btn-primary auth-submit" th:href="@{/login}">Go to sign in</a>
+		<th:block th:unless="${reset}">
+			<p class="auth-lede">Ask your Kosh administrator to send you a new invite. If you already set a password, sign
+				in with it.</p>
+			<a class="btn btn-primary auth-submit" th:href="@{/login}">Go to sign in</a>
+		</th:block>
+		<th:block th:if="${reset}">
+			<p class="auth-lede">Ask for a new link and use the newest email. If you already chose a new password, sign in
+				with it.</p>
+			<a class="btn btn-primary auth-submit" th:href="@{/password/forgot}">Get a new link</a>
+			<p class="auth-foot"><a th:href="@{/login}">Go to sign in</a></p>
+		</th:block>
 	</section>
 </div>
 </body>

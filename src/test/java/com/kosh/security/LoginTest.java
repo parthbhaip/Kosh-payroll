@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.servlet.http.Cookie;
@@ -34,8 +35,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
 import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -220,12 +224,70 @@ class LoginTest {
 		User user = save(EMAIL, "Asha Patil", Role.EMPLOYEE);
 		user.lockUntil(LocalDateTime.now(clock).plusMinutes(10));
 
-		assertThat(rejected(signIn(EMAIL, PASSWORD))).contains(
-				"<p class=\"flash-title\">This account is locked after too many failed sign-ins. Try again later.</p>");
+		assertThat(rejected(signIn(EMAIL, PASSWORD))).contains("<p class=\"flash-title\">This account is locked for 15 "
+				+ "minutes after 5 wrong passwords in a row. Try again later, or reset your password.</p>");
 
 		// The lock ends at its time.
 		user.lockUntil(LocalDateTime.now(clock));
 		signIn(EMAIL, PASSWORD).andExpect(authenticated().withUsername(EMAIL));
+	}
+
+	@Test
+	void fiveWrongPasswordsInARowLockTheAccountForFifteenMinutes() throws Exception {
+		User user = save(EMAIL, "Asha Patil", Role.EMPLOYEE);
+		LocalDateTime now = LocalDateTime.now(clock);
+
+		for (int attempt = 1; attempt <= 4; attempt++) {
+			assertThat(rejected(signIn(EMAIL, "Wrong@1234"))).contains(LoginFailureHandler.BAD_CREDENTIALS);
+		}
+		assertThat(user.getFailedLoginCount()).isEqualTo(4);
+		assertThat(user.isLockedAt(now)).isFalse();
+
+		// The fifth wrong password locks the account for 15 minutes, and the answer says so at once.
+		assertThat(rejected(signIn(EMAIL, "Wrong@1234"))).contains(LoginFailureHandler.LOCKED)
+			.doesNotContain(LoginFailureHandler.BAD_CREDENTIALS);
+		assertThat(user.getLockedUntil()).isEqualTo(now.plusMinutes(15));
+
+		// Now even the right password is refused, with a message that says why and what to do.
+		assertThat(rejected(signIn(EMAIL, PASSWORD))).contains("This account is locked for 15 minutes after 5 wrong "
+				+ "passwords in a row. Try again later, or reset your password.")
+			.contains("<a href=\"/password/forgot\">Forgot your password?</a>");
+		// Guesses during the lock neither count nor extend it.
+		signIn(EMAIL, "Wrong@1234");
+		assertThat(user.getLockedUntil()).isEqualTo(now.plusMinutes(15));
+		assertThat(user.getFailedLoginCount()).isZero();
+	}
+
+	@Test
+	void aSignInClearsEarlierWrongPasswordsAndIsRecorded() throws Exception {
+		User user = save(EMAIL, "Asha Patil", Role.EMPLOYEE);
+		for (int attempt = 1; attempt <= 4; attempt++) {
+			signIn(EMAIL, "Wrong@1234");
+		}
+
+		signIn(EMAIL, PASSWORD).andExpect(authenticated().withUsername(EMAIL));
+
+		assertThat(user.getFailedLoginCount()).isZero();
+		assertThat(user.getLastLoginAt()).isEqualTo(LocalDateTime.now(clock));
+		// So four more wrong ones do not lock it.
+		for (int attempt = 1; attempt <= 4; attempt++) {
+			signIn(EMAIL, "Wrong@1234");
+		}
+		assertThat(user.isLockedAt(LocalDateTime.now(clock))).isFalse();
+	}
+
+	@Test
+	void unknownAddressesAndInvitedAccountsCountNothing() throws Exception {
+		User invited = users.save(new User("invited@login.kosh.test", "Rohan Kulkarni", Set.of(Role.EMPLOYEE)));
+
+		for (int attempt = 1; attempt <= 6; attempt++) {
+			signIn("invited@login.kosh.test", PASSWORD);
+			signIn("nobody@login.kosh.test", PASSWORD);
+		}
+
+		assertThat(invited.getFailedLoginCount()).isZero();
+		assertThat(invited.getLockedUntil()).isNull();
+		assertThat(rejected(signIn("nobody@login.kosh.test", PASSWORD))).contains(LoginFailureHandler.BAD_CREDENTIALS);
 	}
 
 	@Test
@@ -357,6 +419,19 @@ class LoginTest {
 		assertThat(events.stream(AuthenticationSuccessEvent.class)).singleElement()
 			.extracting(event -> event.getAuthentication().getName())
 			.isEqualTo(EMAIL);
+	}
+
+	@Test
+	void onlyFormAndRememberMeSignInsAreRecorded() {
+		User user = save(EMAIL, "Asha Patil", Role.EMPLOYEE);
+		List<GrantedAuthority> employee = AuthorityUtils.createAuthorityList("ROLE_EMPLOYEE");
+
+		// A per-request token (an API's bearer token, say) is not a sign-in.
+		context.publishEvent(new AuthenticationSuccessEvent(new TestingAuthenticationToken(EMAIL, null, employee)));
+		assertThat(user.getLastLoginAt()).isNull();
+
+		context.publishEvent(new AuthenticationSuccessEvent(new RememberMeAuthenticationToken("key", EMAIL, employee)));
+		assertThat(user.getLastLoginAt()).isEqualTo(LocalDateTime.now(clock));
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package com.kosh.user;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,12 @@ import com.kosh.common.BaseEntity;
 @Entity
 @Table(name = "users")
 public class User extends BaseEntity {
+
+	/** Wrong passwords in a row that lock sign-in. */
+	public static final int MAX_FAILED_LOGINS = 5;
+
+	/** How long such a lock lasts. */
+	public static final Duration LOCK_DURATION = Duration.ofMinutes(15);
 
 	@Column(nullable = false, length = 254)
 	private String email;
@@ -144,9 +151,24 @@ public class User extends BaseEntity {
 		return lastLoginAt;
 	}
 
-	/** Counts one more failed sign-in and returns the new count. */
-	public int recordLoginFailure() {
-		return ++failedLoginCount;
+	/**
+	 * Counts a wrong password. The {@value #MAX_FAILED_LOGINS}th in a row locks sign-in for {@link #LOCK_DURATION} and
+	 * starts the count again, so the owner gets a full set of tries once the lock ends.
+	 * @return true when this failure locked the account
+	 */
+	public boolean recordLoginFailure(LocalDateTime now) {
+		if (++failedLoginCount < MAX_FAILED_LOGINS) {
+			return false;
+		}
+		failedLoginCount = 0;
+		lockedUntil = now.plus(LOCK_DURATION);
+		return true;
+	}
+
+	/** Forgets wrong passwords and lifts any lock: a new password or a successful sign-in proves the owner. */
+	public void clearLoginFailures() {
+		this.failedLoginCount = 0;
+		this.lockedUntil = null;
 	}
 
 	/** Blocks sign-in until the given time. */
@@ -161,8 +183,7 @@ public class User extends BaseEntity {
 
 	/** A successful sign-in clears failures and any lock, and remembers when it happened. */
 	public void recordLoginSuccess(LocalDateTime at) {
-		this.failedLoginCount = 0;
-		this.lockedUntil = null;
+		clearLoginFailures();
 		this.lastLoginAt = at;
 	}
 

@@ -13,9 +13,12 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.web.servlet.FlashMap;
 import org.springframework.web.servlet.support.SessionFlashMapManager;
 
+import com.kosh.user.User;
+
 /**
  * A failed sign-in goes back to the sign-in page with the reason and the e-mail as typed, carried once in a flash map
- * (never in the URL). Wrong password, unknown e-mail and invited-without-password all read the same.
+ * (never in the URL). Wrong password, unknown e-mail and invited-without-password all read the same, except the wrong
+ * password that has just locked the account, which says so (as the change-password page does).
  */
 final class LoginFailureHandler implements AuthenticationFailureHandler {
 
@@ -27,7 +30,8 @@ final class LoginFailureHandler implements AuthenticationFailureHandler {
 
 	static final String DISABLED = "This account is disabled. Contact your Kosh administrator.";
 
-	static final String LOCKED = "This account is locked after too many failed sign-ins. Try again later.";
+	static final String LOCKED = ("This account is locked for %d minutes after %d wrong passwords in a row. "
+			+ "Try again later, or reset your password.").formatted(User.LOCK_DURATION.toMinutes(), User.MAX_FAILED_LOGINS);
 
 	static final String UNAVAILABLE = "We couldn’t sign you in just now. Try again in a minute.";
 
@@ -38,7 +42,8 @@ final class LoginFailureHandler implements AuthenticationFailureHandler {
 			AuthenticationException exception) throws IOException {
 		String loginPage = request.getContextPath() + "/login";
 		FlashMap flash = new FlashMap();
-		flash.put(ERROR, message(exception));
+		boolean lockedNow = request.getAttribute(SignInAttempts.LOCKED_NOW) != null;
+		flash.put(ERROR, lockedNow ? LOCKED : message(exception));
 		String email = (request.getParameter(EMAIL) != null) ? request.getParameter(EMAIL).strip() : "";
 		if (!email.isEmpty()) {
 			flash.put(EMAIL, (email.length() > 254) ? email.substring(0, 254) : email);

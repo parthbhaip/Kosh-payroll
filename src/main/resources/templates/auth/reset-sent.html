@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/public :: layout(title='Check your email', content=~{::content})}">
+<body>
+<div class="auth-main" th:fragment="content">
+	<section class="card auth-card" aria-labelledby="sent-title">
+		<h1 class="auth-title" id="sent-title">Check your email</h1>
+		<p class="auth-lede" th:if="${email != null}">If <strong th:text="${email}">meera.deshpande@panchganga.in</strong>
+			belongs to a Kosh account, a link to reset its password is on its way.</p>
+		<p class="auth-lede" th:if="${email == null}">If the address you entered belongs to a Kosh account, a link to
+			reset its password is on its way.</p>
+		<p class="auth-lede" th:text="|The link works once, for ${validMinutes} minutes. Nothing arrived after a few minutes? Check your spam folder, then ask for a new link.|">
+			The link works once, for 30 minutes. Nothing arrived after a few minutes? Check your spam folder, then ask for
+			a new link.</p>
+		<a class="btn btn-primary auth-submit" th:href="@{/login}">Back to sign in</a>
+		<p class="auth-foot"><a th:href="@{/password/forgot}">Send a new link</a></p>
+	</section>
+</div>
+</body>
+</html>

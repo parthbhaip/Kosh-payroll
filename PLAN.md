@@ -59,7 +59,7 @@ How this file works
   - `/admin/users`: list with search and role filter; invite user (email + roles) sends a set-password link (token hashed, 48 h expiry, single use); edit roles; enable/disable. Never disable yourself or remove the last ADMIN.
   - `MailService` interface: `LoggingMailService` (dev/test) and `SmtpMailService` (mysql). Tests.
 
-- [ ] T09 Password reset, change password, lockout
+- [x] T09 Password reset, change password, lockout
   - Forgot password (same response whether the email exists), reset with a 30-minute single-use hashed token, change password (current required), lock for 15 minutes after 5 failed logins, friendly messages. Bootstrap the first ADMIN from `ADMIN_EMAIL`/`ADMIN_PASSWORD` when none exists. Tests.
 
 - [ ] T10 Audit log

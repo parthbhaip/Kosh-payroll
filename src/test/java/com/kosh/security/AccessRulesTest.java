@@ -8,15 +8,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Arrays;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+
+import com.kosh.user.Role;
 
 /**
  * The URL rules (PLAN T07) against the real area homes. Each row is the specification for a set of roles: 200 opens
@@ -78,10 +80,16 @@ class AccessRulesTest {
 	@ParameterizedTest
 	@ValueSource(strings = { "/password/forgot", "/password/reset", "/password/set" })
 	void passwordLinksFromEmailsAreOpenWithoutSigningIn(String path) throws Exception {
-		// Set-password (T08) answers without a token; forgot and reset arrive with T09 (404 until then).
-		MockHttpServletResponse response = mvc.perform(get(path)).andReturn().getResponse();
-		assertThat(response.getStatus()).as(path).isNotEqualTo(403);
-		assertThat(response.getRedirectedUrl()).as(path).isNotEqualTo("/login");
+		// Without a token, set and reset show "This link no longer works"; forgot shows its form.
+		mvc.perform(get(path)).andExpect(status().isOk());
+	}
+
+	@Test
+	void changingYourPasswordNeedsASignInButNoParticularRole() throws Exception {
+		mvc.perform(get("/account/password")).andExpect(redirectedUrl("/login"));
+		for (Role role : Role.values()) {
+			expect("/account/password", new String[] { role.name() }, 200);
+		}
 	}
 
 	private void expect(String path, String[] roles, int status) throws Exception {

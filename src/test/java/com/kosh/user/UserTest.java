@@ -66,8 +66,8 @@ class UserTest {
 	@Test
 	void successfulSignInClearsFailuresAndLock() {
 		User user = new User("employee@kosh.test", "Kavya Pawar", List.of(Role.EMPLOYEE));
-		user.recordLoginFailure();
-		user.recordLoginFailure();
+		user.recordLoginFailure(NOW);
+		user.recordLoginFailure(NOW);
 		user.lockUntil(NOW.plusMinutes(15));
 
 		user.recordLoginSuccess(NOW);
@@ -75,6 +75,41 @@ class UserTest {
 		assertThat(user.getFailedLoginCount()).isZero();
 		assertThat(user.isLockedAt(NOW)).isFalse();
 		assertThat(user.getLastLoginAt()).isEqualTo(NOW);
+	}
+
+	@Test
+	void theFifthWrongPasswordInARowLocksForFifteenMinutesAndStartsTheCountAgain() {
+		User user = new User("employee@kosh.test", "Kavya Pawar", List.of(Role.EMPLOYEE));
+
+		for (int failure = 1; failure <= 4; failure++) {
+			assertThat(user.recordLoginFailure(NOW)).as("failure %d", failure).isFalse();
+			assertThat(user.getFailedLoginCount()).isEqualTo(failure);
+		}
+		assertThat(user.isLockedAt(NOW)).isFalse();
+
+		assertThat(user.recordLoginFailure(NOW)).isTrue();
+		assertThat(user.getLockedUntil()).isEqualTo(NOW.plusMinutes(15));
+		assertThat(user.isLockedAt(NOW.plusMinutes(14))).isTrue();
+		assertThat(user.isLockedAt(NOW.plusMinutes(15))).isFalse();
+		// After the lock the owner has five tries again.
+		assertThat(user.getFailedLoginCount()).isZero();
+		assertThat(User.MAX_FAILED_LOGINS).isEqualTo(5);
+	}
+
+	@Test
+	void clearingFailuresLiftsTheLockButKeepsTheLastSignIn() {
+		User user = new User("employee@kosh.test", "Kavya Pawar", List.of(Role.EMPLOYEE));
+		user.recordLoginSuccess(NOW.minusDays(1));
+		for (int failure = 0; failure < 5; failure++) {
+			user.recordLoginFailure(NOW);
+		}
+		user.recordLoginFailure(NOW);
+
+		user.clearLoginFailures();
+
+		assertThat(user.getFailedLoginCount()).isZero();
+		assertThat(user.getLockedUntil()).isNull();
+		assertThat(user.getLastLoginAt()).isEqualTo(NOW.minusDays(1));
 	}
 
 }

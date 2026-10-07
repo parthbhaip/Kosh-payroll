@@ -94,6 +94,8 @@
 						</div>
 						<a class="menu-item" th:if="${shell.profileHref() != null}" th:href="@{${shell.profileHref()}}">
 							<svg th:replace="~{fragments/icon :: icon('user')}"></svg>My profile</a>
+						<a class="menu-item" th:href="@{/account/password}">
+							<svg th:replace="~{fragments/icon :: icon('lock')}"></svg>Change password</a>
 						<form th:action="@{/logout}" method="post">
 							<button class="menu-item" type="submit"><svg th:replace="~{fragments/icon :: icon('logout')}"></svg>Sign out</button>
 						</form>

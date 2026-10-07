@@ -36,7 +36,8 @@
 			</label>
 			<button class="btn btn-primary auth-submit" type="submit">Sign in</button>
 		</form>
-		<p class="auth-foot">Forgot your password or locked out? Contact HR or your Kosh administrator.</p>
+		<p class="auth-foot"><a th:href="@{/password/forgot}">Forgot your password?</a> We’ll email you a link to choose a
+			new one.</p>
 	</section>
 	<p class="auth-help">New to Kosh? <a th:href="@{/help}">Read how accounts work</a>.</p>
 </div>

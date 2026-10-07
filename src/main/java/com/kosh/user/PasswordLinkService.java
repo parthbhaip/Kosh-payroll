@@ -13,12 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.HmacHasher;
+import com.kosh.security.SignedInSessions;
 import com.kosh.user.UserToken.Purpose;
 
 /**
  * Single-use password links: 32 random bytes, base64url in the e-mail, only their keyed hash in the database. A link
  * works once, until it expires ({@link Purpose#validity()}), and only while the account is enabled. Issuing a new link
- * spends the user's older ones of the same purpose. Open to anonymous visitors on purpose: the token is the credential.
+ * spends the user's older ones of the same purpose; any new password spends all of them. Open to anonymous visitors on
+ * purpose: the token is the credential.
  */
 @Service
 public class PasswordLinkService {
@@ -50,14 +52,17 @@ public class PasswordLinkService {
 
 	private final Clock clock;
 
+	private final SignedInSessions sessions;
+
 	private final SecureRandom random = new SecureRandom();
 
 	public PasswordLinkService(UserTokenRepository tokens, HmacHasher hasher, PasswordEncoder passwordEncoder,
-			Clock clock) {
+			Clock clock, SignedInSessions sessions) {
 		this.tokens = tokens;
 		this.hasher = hasher;
 		this.passwordEncoder = passwordEncoder;
 		this.clock = clock;
+		this.sessions = sessions;
 	}
 
 	/** Issues a new link for the user and spends their older unused links of the same purpose. */
@@ -80,7 +85,8 @@ public class PasswordLinkService {
 	}
 
 	/**
-	 * Sets the user's password from a link and spends it.
+	 * Sets the user's password from a link and spends it. The account's failed sign-ins and any lock are cleared, and
+	 * its open sessions end (old remember-me cookies stop working anyway, because they are signed with the old hash).
 	 * @throws BusinessRuleException on field {@code password} for a password outside the rules, or form-wide
 	 * ({@link #LINK_NOT_VALID}) when the link no longer works
 	 */
@@ -90,7 +96,10 @@ public class PasswordLinkService {
 		checkPassword(password);
 		User user = link.getUser();
 		user.setPasswordHash(passwordEncoder.encode(password));
-		spendOpenLinks(user, purpose, LocalDateTime.now(clock));
+		// Proof of the mailbox: lift a lock, and sign out anyone still holding the old password's sessions.
+		user.clearLoginFailures();
+		spendAllLinks(user);
+		sessions.end(user.getEmail(), null);
 		return user;
 	}
 
@@ -121,6 +130,16 @@ public class PasswordLinkService {
 			.filter(link -> link.isUsableAt(now) && link.getUser().isEnabled())
 			// An invite is for a first password only.
 			.filter(link -> purpose != Purpose.INVITE || link.getUser().getPasswordHash() == null);
+	}
+
+	/**
+	 * Spends every open link of the user, whatever its purpose, once their password changes: a reset link asked for
+	 * earlier must not outlive the password it was meant to replace.
+	 */
+	@Transactional
+	void spendAllLinks(User user) {
+		LocalDateTime now = LocalDateTime.now(clock);
+		tokens.findByUserAndUsedAtIsNull(user).forEach(link -> link.use(now));
 	}
 
 	private void spendOpenLinks(User user, Purpose purpose, LocalDateTime now) {

@@ -140,8 +140,8 @@ class UserRepositoryTest {
 		user.setRoles(Set.of(Role.MANAGER, Role.EMPLOYEE));
 		user.setPasswordHash("{bcrypt}" + "h".repeat(60));
 		user.setEnabled(false);
-		user.recordLoginFailure();
-		assertThat(user.recordLoginFailure()).isEqualTo(2);
+		user.recordLoginFailure(NOW);
+		assertThat(user.recordLoginFailure(NOW)).isFalse();
 		user.lockUntil(NOW.plusMinutes(15));
 		users.flush();
 		em.clear();

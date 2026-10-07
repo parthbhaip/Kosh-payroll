@@ -28,7 +28,10 @@ public class UserToken extends BaseEntity {
 	public enum Purpose {
 
 		/** Set a first password after an admin invited the user. */
-		INVITE(Duration.ofHours(48));
+		INVITE(Duration.ofHours(48)),
+
+		/** Choose a new password after "Forgot your password?" on the sign-in page. */
+		RESET(Duration.ofMinutes(30));
 
 		private final Duration validity;
 

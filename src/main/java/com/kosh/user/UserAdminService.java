@@ -15,9 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +24,7 @@ import com.kosh.common.NotFoundException;
 import com.kosh.config.AppProperties;
 import com.kosh.notification.MailService;
 import com.kosh.security.KoshUserDetails;
+import com.kosh.security.SignedInSessions;
 import com.kosh.user.UserToken.Purpose;
 
 /**
@@ -100,7 +98,7 @@ public class UserAdminService {
 
 	private final MailService mail;
 
-	private final SessionRegistry sessions;
+	private final SignedInSessions sessions;
 
 	private final AppProperties app;
 
@@ -109,7 +107,7 @@ public class UserAdminService {
 	private final Clock clock;
 
 	public UserAdminService(UserRepository users, UserTokenRepository tokens, PasswordLinkService links,
-			MailService mail, SessionRegistry sessions, AppProperties app, Fmt fmt, Clock clock) {
+			MailService mail, SignedInSessions sessions, AppProperties app, Fmt fmt, Clock clock) {
 		this.users = users;
 		this.tokens = tokens;
 		this.links = links;
@@ -274,11 +272,7 @@ public class UserAdminService {
 
 	/** Expires every session of the user; each one is signed out on its next request. */
 	private void endSessions(User user) {
-		for (Object principal : sessions.getAllPrincipals()) {
-			if (principal instanceof UserDetails details && details.getUsername().equals(user.getEmail())) {
-				sessions.getAllSessions(principal, false).forEach(SessionInformation::expireNow);
-			}
-		}
+		sessions.end(user.getEmail(), null);
 	}
 
 	private User find(long id) {

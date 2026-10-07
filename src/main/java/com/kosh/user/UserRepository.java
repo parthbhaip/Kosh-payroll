@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.criteria.Predicate;
 
 import org.springframework.data.domain.Page;
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 /**
@@ -36,6 +38,20 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 	default Optional<User> findByEmailIgnoreCase(String email) {
 		String normalized = User.normalizeEmail(email);
 		return normalized == null || normalized.isEmpty() ? Optional.empty() : findWithRolesByEmail(normalized);
+	}
+
+	/**
+	 * Internal: exact match with a row lock until the transaction ends, so concurrent sign-ins count failures one at a
+	 * time instead of failing on the version check. Call {@link #lockByEmailIgnoreCase}.
+	 */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select u from User u where u.email = :email")
+	Optional<User> findForUpdateByEmail(String email);
+
+	/** The user with this e-mail in any case, row-locked for the rest of the transaction. Needs a transaction. */
+	default Optional<User> lockByEmailIgnoreCase(String email) {
+		String normalized = User.normalizeEmail(email);
+		return normalized == null || normalized.isEmpty() ? Optional.empty() : findForUpdateByEmail(normalized);
 	}
 
 	/** Whether any user already has this e-mail in any case. */
@@ -85,5 +101,11 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 			select count(u) from User u join u.roles r
 			where r = com.kosh.user.Role.ADMIN and u.enabled = true and u.passwordHash is not null and u.id <> :userId""")
 	long countOtherActiveAdmins(Long userId);
+
+	/** Admins who can sign in now (see {@link #countOtherActiveAdmins}). */
+	@Query("""
+			select count(u) from User u join u.roles r
+			where r = com.kosh.user.Role.ADMIN and u.enabled = true and u.passwordHash is not null""")
+	long countActiveAdmins();
 
 }
