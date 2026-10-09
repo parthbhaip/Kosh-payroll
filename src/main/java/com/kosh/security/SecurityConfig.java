@@ -127,7 +127,7 @@ public class SecurityConfig {
 	 * shut whatever is typed and the lock never tells a guesser when a password is right. Trade-off (accepted, see
 	 * NOTES T07): a locked account answers "locked" to any password, quickly and without the bcrypt work, while an
 	 * unknown e-mail never locks, so anyone willing to lock an account can learn that it exists. Sign-in events go to
-	 * the application: {@link SignInAttempts} counts wrong passwords and locks, and the audit log will listen too.
+	 * the application: {@link SignInAttempts} counts wrong passwords and locks, and {@link SignInAudit} records each attempt.
 	 */
 	@Bean
 	AuthenticationManager authenticationManager(KoshUserDetailsService users, PasswordEncoder passwordEncoder,

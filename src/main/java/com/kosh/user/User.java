@@ -31,6 +31,9 @@ import com.kosh.common.BaseEntity;
 @Table(name = "users")
 public class User extends BaseEntity {
 
+	/** How audit events name this kind of record. */
+	public static final String AUDIT_TYPE = "User";
+
 	/** Wrong passwords in a row that lock sign-in. */
 	public static final int MAX_FAILED_LOGINS = 5;
 
@@ -163,6 +166,12 @@ public class User extends BaseEntity {
 		failedLoginCount = 0;
 		lockedUntil = now.plus(LOCK_DURATION);
 		return true;
+	}
+
+	/** The audit log's line for the lock that {@link #recordLoginFailure} has just set. */
+	public String lockedSummary() {
+		return "Locked %s out for %d minutes after %d wrong passwords in a row".formatted(displayName,
+				LOCK_DURATION.toMinutes(), MAX_FAILED_LOGINS);
 	}
 
 	/** Forgets wrong passwords and lifts any lock: a new password or a successful sign-in proves the owner. */

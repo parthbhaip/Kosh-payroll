@@ -48,6 +48,10 @@
 					<dd th:text="${@fmt.date(account.createdAt())}">1 Oct 2026</dd>
 				</dl>
 			</div>
+			<div class="card-footer">
+				<span>Sign-ins and changes to this account</span>
+				<a th:href="@{/admin/audit(entity='User', entityId=${account.id()})}">View in audit log</a>
+			</div>
 		</section>
 
 		<section class="card" aria-labelledby="access-title">

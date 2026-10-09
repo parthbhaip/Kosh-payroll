@@ -3,7 +3,6 @@ package com.kosh.user;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
@@ -17,6 +16,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
+
+import com.kosh.common.Like;
 
 /**
  * Users by e-mail. E-mails are stored normalised ({@link User#normalizeEmail}), so the case-insensitive lookups
@@ -60,9 +61,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 		return normalized != null && !normalized.isEmpty() && existsExactlyByEmail(normalized);
 	}
 
-	/** Escape character for LIKE patterns: not a backslash, which MySQL string literals treat as an escape. */
-	char LIKE_ESCAPE = '!';
-
 	/**
 	 * One page of users whose name or e-mail contains {@code text} (any case; blank matches everyone) and who hold
 	 * {@code role} (null for any). Roles are not fetched here, because a collection fetch cannot be paged in the
@@ -72,9 +70,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 		Specification<User> matching = (root, query, cb) -> {
 			List<Predicate> where = new ArrayList<>();
 			if (text != null && !text.isBlank()) {
-				String like = "%" + escapeLike(text.strip().toLowerCase(Locale.ROOT)) + "%";
-				where.add(cb.or(cb.like(cb.lower(root.get("displayName")), like, LIKE_ESCAPE),
-						cb.like(root.get("email"), like, LIKE_ESCAPE)));
+				String like = Like.containing(text);
+				where.add(cb.or(cb.like(cb.lower(root.get("displayName")), like, Like.ESCAPE),
+						cb.like(root.get("email"), like, Like.ESCAPE)));
 			}
 			if (role != null) {
 				where.add(cb.isMember(role, root.get("roles")));
@@ -82,11 +80,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 			return cb.and(where.toArray(Predicate[]::new));
 		};
 		return findAll(matching, pageable);
-	}
-
-	/** Typed text as a literal LIKE fragment: {@code %}, {@code _} and the escape character lose their meaning. */
-	static String escapeLike(String text) {
-		return text.replace("!", "!!").replace("%", "!%").replace("_", "!_");
 	}
 
 	/** The users with these ids, roles loaded in the same query. */

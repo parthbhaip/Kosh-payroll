@@ -2,6 +2,7 @@ package com.kosh.user;
 
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -50,6 +51,11 @@ public enum Role {
 			}
 		}
 		return Optional.empty();
+	}
+
+	/** Role names for the audit log, in the order of {@link Role}. */
+	public static List<String> labels(Collection<Role> roles) {
+		return roles.stream().sorted().map(Role::label).toList();
 	}
 
 	/** The Kosh roles among granted authorities; anything else (remember-me or anonymous markers) is skipped. */

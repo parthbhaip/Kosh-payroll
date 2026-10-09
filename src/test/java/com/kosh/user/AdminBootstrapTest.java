@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +23,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditEvent;
+import com.kosh.audit.AuditEventRepository;
+import com.kosh.audit.AuditFilter;
+import com.kosh.audit.AuditService;
 import com.kosh.user.AdminBootstrap.Outcome;
 
 /**
@@ -49,13 +55,16 @@ class AdminBootstrapTest {
 
 	private final Environment environment;
 
+	private final AuditEventRepository events;
+
 	@Autowired
 	AdminBootstrapTest(AdminBootstrap bootstrap, UserRepository users, PasswordEncoder passwordEncoder,
-			Environment environment) {
+			Environment environment, AuditEventRepository events) {
 		this.bootstrap = bootstrap;
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
 		this.environment = environment;
+		this.events = events;
 	}
 
 	@Test
@@ -73,7 +82,7 @@ class AdminBootstrapTest {
 
 		UserRepository noAdmins = mock(UserRepository.class);
 		when(noAdmins.findByEmailIgnoreCase(EMAIL)).thenReturn(Optional.empty());
-		new AdminBootstrap(noAdmins, passwordEncoder, EMAIL, PASSWORD).run(null);
+		new AdminBootstrap(noAdmins, passwordEncoder, mock(AuditService.class), EMAIL, PASSWORD).run(null);
 
 		ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
 		verify(noAdmins).save(saved.capture());
@@ -92,6 +101,12 @@ class AdminBootstrapTest {
 		assertThat(admin.isEnabled()).isTrue();
 		assertThat(passwordEncoder.matches(PASSWORD, admin.getPasswordHash())).isTrue();
 		assertThat(users.countActiveAdmins()).isEqualTo(1);
+		AuditEvent created = onlyEventOf(admin);
+		assertThat(created.getAction()).isEqualTo(AuditAction.ADMIN_BOOTSTRAPPED);
+		assertThat(created.getActorName()).isEqualTo("System");
+		assertThat(created.getSummary())
+			.isEqualTo("Created the admin account owner@bootstrap.kosh.test from ADMIN_EMAIL, with the password from ADMIN_PASSWORD");
+		assertThat(created.getAfterJson()).isEqualTo("{\"Roles\":\"Admin\"}").doesNotContain(PASSWORD);
 
 		// From now on it does nothing, whatever the variables say.
 		assertThat(bootstrap.ensureAdmin("someone.else@bootstrap.kosh.test", "Another pass 2026"))
@@ -122,6 +137,11 @@ class AdminBootstrapTest {
 		assertThat(owner.isLockedAt(NOW)).isFalse();
 		assertThat(passwordEncoder.matches(PASSWORD, owner.getPasswordHash())).isTrue();
 		assertThat(users.countActiveAdmins()).isEqualTo(1);
+		AuditEvent promoted = onlyEventOf(owner);
+		assertThat(promoted.getSummary())
+			.isEqualTo("Made an active admin of owner@bootstrap.kosh.test from ADMIN_EMAIL, with the password from ADMIN_PASSWORD");
+		assertThat(promoted.getBeforeJson()).isEqualTo("{\"Roles\":\"HR, Employee\",\"Status\":\"Disabled\"}");
+		assertThat(promoted.getAfterJson()).isEqualTo("{\"Roles\":\"Admin, HR, Employee\",\"Status\":\"Enabled\"}");
 	}
 
 	@Test
@@ -141,6 +161,13 @@ class AdminBootstrapTest {
 			.hasMessage("ADMIN_PASSWORD breaks the password rules: Use 8 to 64 characters.")
 			.hasMessageNotContaining("short1");
 		assertThat(users.existsByEmailIgnoreCase(EMAIL)).isFalse();
+	}
+
+	private AuditEvent onlyEventOf(User user) {
+		List<AuditEvent> found = events.findAll(
+				AuditEventRepository.matching(new AuditFilter(null, null, User.AUDIT_TYPE, user.getId(), null, null), null));
+		assertThat(found).hasSize(1);
+		return found.getFirst();
 	}
 
 }

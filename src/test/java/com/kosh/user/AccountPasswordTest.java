@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditEvent;
+import com.kosh.audit.AuditEventRepository;
+import com.kosh.audit.AuditFilter;
 import com.kosh.user.UserToken.Purpose;
 import com.kosh.web.Flash;
 
@@ -62,16 +67,19 @@ class AccountPasswordTest {
 
 	private final PasswordLinkService links;
 
+	private final AuditEventRepository events;
+
 	private User kavya;
 
 	@Autowired
 	AccountPasswordTest(MockMvc mvc, UserRepository users, PasswordEncoder passwordEncoder, AccountService service,
-			PasswordLinkService links) {
+			PasswordLinkService links, AuditEventRepository events) {
 		this.mvc = mvc;
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
 		this.service = service;
 		this.links = links;
+		this.events = events;
 	}
 
 	@BeforeEach
@@ -138,6 +146,16 @@ class AccountPasswordTest {
 			.andExpect(authenticated().withUsername(EMAIL));
 		// A reset link asked for before the change no longer works.
 		mvc.perform(get("/password/reset").param("token", resetAskedEarlier)).andExpect(view().name("auth/link-invalid"));
+
+		List<AuditEvent> trail = eventsOf(kavya);
+		assertThat(trail).extracting(AuditEvent::getAction)
+			.containsExactly(AuditAction.LOGIN_SUCCEEDED, AuditAction.LOGIN_SUCCEEDED, AuditAction.PASSWORD_CHANGED,
+					AuditAction.LOGIN_FAILED, AuditAction.LOGIN_SUCCEEDED);
+		AuditEvent changed = trail.get(2);
+		assertThat(changed.getActorEmail()).isEqualTo(EMAIL);
+		assertThat(changed.getActorName()).isEqualTo("Kavya Pawar");
+		assertThat(changed.getSummary()).isEqualTo("Changed their password; their other sessions were signed out");
+		assertThat(changed.getBeforeJson()).isNull();
 	}
 
 	@Test
@@ -177,6 +195,14 @@ class AccountPasswordTest {
 		assertThat(passwordEncoder.matches(PASSWORD, kavya.getPasswordHash())).isTrue();
 		mvc.perform(post("/login").param("email", EMAIL).param("password", PASSWORD).with(csrf()))
 			.andExpect(unauthenticated());
+
+		// The lock is on record; the wrong guesses themselves are not sign-ins.
+		List<AuditEvent> trail = eventsOf(kavya);
+		assertThat(trail).extracting(AuditEvent::getAction)
+			.containsExactly(AuditAction.LOGIN_SUCCEEDED, AuditAction.ACCOUNT_LOCKED, AuditAction.LOGIN_FAILED);
+		assertThat(trail.get(1).getActorName()).isEqualTo("System");
+		assertThat(trail.get(1).getSummary())
+			.isEqualTo("Locked Kavya Pawar out for 15 minutes after 5 wrong passwords in a row");
 	}
 
 	@Test
@@ -225,6 +251,14 @@ class AccountPasswordTest {
 			.andReturn()
 			.getResponse()
 			.getContentAsString();
+	}
+
+	/** The user's audit events, oldest first. */
+	private List<AuditEvent> eventsOf(User user) {
+		return events
+			.findAll(AuditEventRepository.matching(new AuditFilter(null, null, User.AUDIT_TYPE, user.getId(), null, null),
+					null), AuditEventRepository.NEWEST_FIRST)
+			.reversed();
 	}
 
 }

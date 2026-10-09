@@ -13,6 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditChanges;
+import com.kosh.audit.AuditService;
+import com.kosh.audit.AuditService.Actor;
 import com.kosh.common.BusinessRuleException;
 
 /**
@@ -47,15 +51,18 @@ class AdminBootstrap implements ApplicationRunner {
 
 	private final PasswordEncoder passwordEncoder;
 
+	private final AuditService audit;
+
 	private final String email;
 
 	private final String password;
 
-	AdminBootstrap(UserRepository users, PasswordEncoder passwordEncoder,
+	AdminBootstrap(UserRepository users, PasswordEncoder passwordEncoder, AuditService audit,
 			@Value("${app.admin-bootstrap.email:}") String email,
 			@Value("${app.admin-bootstrap.password:}") String password) {
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
+		this.audit = audit;
 		this.email = email;
 		this.password = password;
 	}
@@ -91,18 +98,26 @@ class AdminBootstrap implements ApplicationRunner {
 		}
 		User admin = users.findByEmailIgnoreCase(address).orElse(null);
 		Outcome outcome = (admin == null) ? Outcome.CREATED : Outcome.PROMOTED;
+		AuditChanges changes = AuditChanges.create();
 		if (admin == null) {
 			admin = new User(address, DISPLAY_NAME, Set.of(Role.ADMIN));
+			changes.field("Roles", null, Role.ADMIN.label());
 		}
 		else {
 			Set<Role> roles = EnumSet.copyOf(admin.getRoles());
 			roles.add(Role.ADMIN);
+			changes.field("Roles", Role.labels(admin.getRoles()), Role.labels(roles))
+				.field("Status", admin.isEnabled() ? "Enabled" : "Disabled", "Enabled");
 			admin.setRoles(roles);
 			admin.setEnabled(true);
 		}
 		admin.setPasswordHash(passwordEncoder.encode(password));
 		admin.clearLoginFailures();
 		users.save(admin);
+		audit.recordAs(Actor.SYSTEM, AuditAction.ADMIN_BOOTSTRAPPED, User.AUDIT_TYPE, admin.getId(),
+				((outcome == Outcome.CREATED) ? "Created the admin account " : "Made an active admin of ") + address
+						+ " from ADMIN_EMAIL, with the password from ADMIN_PASSWORD",
+				changes);
 		log.info("No active admin found, so {} can now sign in as admin with ADMIN_PASSWORD. Remove both variables now.",
 				address);
 		return outcome;

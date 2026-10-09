@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Audit log', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/admin}">Admin</a></li></th:block>
+<th:block th:fragment="content">
+	<div class="page-toolbar">
+		<p>Sign-ins, account changes and every other recorded action: who did it, when, and from which network address. Events can’t be edited or deleted.</p>
+		<form th:if="${page != null and page.totalElements > 0}" method="post" th:action="${exportHref}">
+			<button class="btn btn-secondary" type="submit"><svg th:replace="~{fragments/icon :: icon('download')}"></svg>Export CSV</button>
+		</form>
+	</div>
+
+	<div class="card">
+		<form class="filter-bar" method="get" th:action="@{/admin/audit}" role="search" aria-label="Filter the audit log">
+			<div class="field field-search">
+				<label class="label" for="audit-actor">Actor</label>
+				<div class="search">
+					<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
+					<input class="input" id="audit-actor" name="actor" type="search" maxlength="100" placeholder="Name or email"
+						autocomplete="off" th:value="${filter.actor}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label" for="audit-action">Action</label>
+				<select class="select" id="audit-action" name="action">
+					<option value="">All actions</option>
+					<option th:each="option : ${actions}" th:value="${option.name()}" th:text="${option.label()}"
+						th:selected="${option.name() == filter.action}">Signed in</option>
+				</select>
+			</div>
+			<div class="field">
+				<label class="label" for="audit-entity">Record</label>
+				<select class="select" id="audit-entity" name="entity">
+					<option value="">All records</option>
+					<option th:each="type : ${entityTypes}" th:value="${type}" th:text="${type}"
+						th:selected="${type == filter.entity}">User</option>
+				</select>
+			</div>
+			<div class="field">
+				<label class="label" for="audit-entity-id">Record ID</label>
+				<input class="input" id="audit-entity-id" name="entityId" type="text" inputmode="numeric" pattern="[0-9]*"
+					maxlength="19" autocomplete="off" th:value="${filter.entityId}">
+			</div>
+			<div class="field">
+				<label class="label" for="audit-from">From</label>
+				<input class="input" id="audit-from" name="from" type="date" th:value="${filter.from}">
+			</div>
+			<div class="field">
+				<label class="label" for="audit-to">To</label>
+				<input class="input" id="audit-to" name="to" type="date" th:value="${filter.to}"
+					th:attr="aria-invalid=${rangeError != null} ? 'true' : null, aria-describedby=${rangeError != null} ? 'audit-to-error' : null">
+				<p class="error-text" id="audit-to-error" th:if="${rangeError != null}">
+					<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${rangeError}">The end date is before the start date.</span>
+				</p>
+			</div>
+			<div class="filter-actions">
+				<a class="btn btn-ghost" th:if="${filtered}" th:href="@{/admin/audit}">Clear</a>
+				<button class="btn btn-secondary" type="submit"><svg th:replace="~{fragments/icon :: icon('filter')}"></svg>Apply</button>
+			</div>
+		</form>
+
+		<div class="table-wrap" th:if="${page != null and !page.empty}">
+			<table class="table audit-table">
+				<caption class="visually-hidden">Audit events, newest first</caption>
+				<thead>
+					<tr>
+						<th scope="col">When</th>
+						<th scope="col">Actor</th>
+						<th scope="col">Action</th>
+						<th scope="col">Record</th>
+						<th scope="col">Details</th>
+						<th scope="col">IP address</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="event : ${page.content}">
+						<th scope="row"><time th:datetime="${event.occurredAt()}" th:text="${@fmt.dateTime(event.occurredAt())}">5 Oct 2026, 10:00 AM</time></th>
+						<td>
+							<span class="cell-title" th:text="${event.actorName()}">Meera Deshpande</span>
+							<span class="cell-sub" th:if="${event.actorEmail() != null}" th:text="${event.actorEmail()}">meera.deshpande@panchganga.in</span>
+						</td>
+						<td><span class="badge" th:classappend="${event.action().tone() != null} ? ${'badge-' + event.action().tone()}"
+							th:text="${event.action().label()}">Roles changed</span></td>
+						<td th:if="${event.entityType() != null}">
+							<span th:text="${event.entityType()}">User</span>
+							<span class="mono text-muted" th:if="${event.entityId() != null}" th:text="${'#' + event.entityId()}">#12</span>
+						</td>
+						<td th:unless="${event.entityType() != null}" class="text-muted">—</td>
+						<td class="wrap">
+							<p class="audit-summary" th:text="${event.summary()}">Changed roles for Meera Deshpande</p>
+							<details class="audit-changes" th:unless="${event.changes().empty}">
+								<summary><svg th:replace="~{fragments/icon :: icon('chevron-down')}"></svg><span
+									th:text="${event.changes().size() == 1} ? '1 field changed' : ${event.changes().size() + ' fields changed'}">2 fields changed</span></summary>
+								<table class="change-table">
+									<caption class="visually-hidden">Changed fields</caption>
+									<thead>
+										<tr><th scope="col">Field</th><th scope="col">Before</th><th scope="col">After</th></tr>
+									</thead>
+									<tbody>
+										<tr th:each="change : ${event.changes()}">
+											<th scope="row" th:text="${change.field()}">Roles</th>
+											<td th:text="${#strings.isEmpty(change.before())} ? '—' : ${change.before()}">Employee</td>
+											<td th:text="${#strings.isEmpty(change.after())} ? '—' : ${change.after()}">Employee, HR</td>
+										</tr>
+									</tbody>
+								</table>
+							</details>
+						</td>
+						<td class="mono" th:text="${event.ipAddress() != null} ? ${event.ipAddress()} : '—'">203.0.113.7</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<th:block th:if="${page == null}">
+			<div th:replace="~{fragments/ui :: empty(image='search', title='No events to show', text='Fix the date range above, then apply the filters again.', action=null)}"></div>
+		</th:block>
+		<th:block th:if="${page != null and page.empty and filtered}">
+			<div th:replace="~{fragments/ui :: empty(image='search', title='No events match these filters', text='Try a wider date range, another action, or clear the filters.', action=~{::clear-filters})}"></div>
+		</th:block>
+		<th:block th:if="${page != null and page.empty and !filtered}">
+			<div th:replace="~{fragments/ui :: empty(image='documents', title='Nothing recorded yet', text='Sign-ins and changes to users and roles appear here as they happen.', action=null)}"></div>
+		</th:block>
+
+		<th:block th:if="${page != null}">
+			<nav th:replace="~{fragments/ui :: pagination(${page}, 'events', 'Audit log pages')}"></nav>
+		</th:block>
+	</div>
+</th:block>
+<a class="btn btn-secondary" th:fragment="clear-filters" th:href="@{/admin/audit}">Clear filters</a>
+</body>
+</html>

@@ -30,6 +30,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.MailSendException;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -39,6 +40,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditEvent;
+import com.kosh.audit.AuditEventRepository;
+import com.kosh.audit.AuditFilter;
 import com.kosh.common.HmacHasher;
 import com.kosh.notification.MailService;
 import com.kosh.user.UserToken.Purpose;
@@ -85,17 +90,23 @@ class PasswordResetTest {
 
 	private final PasswordEncoder passwordEncoder;
 
+	private final AuditEventRepository events;
+
+	private final JdbcTemplate jdbc;
+
 	private User meera;
 
 	@Autowired
 	PasswordResetTest(MockMvc mvc, UserRepository users, UserTokenRepository tokens, MailService mail, HmacHasher hasher,
-			PasswordEncoder passwordEncoder) {
+			PasswordEncoder passwordEncoder, AuditEventRepository events, JdbcTemplate jdbc) {
 		this.mvc = mvc;
 		this.users = users;
 		this.tokens = tokens;
 		this.mail = mail;
 		this.hasher = hasher;
 		this.passwordEncoder = passwordEncoder;
+		this.events = events;
+		this.jdbc = jdbc;
 	}
 
 	@BeforeEach
@@ -110,6 +121,7 @@ class PasswordResetTest {
 		List<User> created = users.findAll().stream().filter(user -> user.getEmail().endsWith(DOMAIN)).toList();
 		List<Long> ids = created.stream().map(User::getId).toList();
 		tokens.deleteAll(tokens.findAll().stream().filter(link -> ids.contains(link.getUser().getId())).toList());
+		ids.forEach(id -> jdbc.update("delete from audit_events where entity_type = 'User' and entity_id = ?", id));
 		users.deleteAll(created);
 	}
 
@@ -266,6 +278,15 @@ class PasswordResetTest {
 
 		signIn(PASSWORD).andExpect(redirectedUrl("/login")).andExpect(unauthenticated());
 		signIn(NEW_PASSWORD).andExpect(redirectedUrl("/hr")).andExpect(authenticated().withUsername(EMAIL));
+		List<AuditEvent> trail = events.findAll(AuditEventRepository.matching(
+				new AuditFilter(null, null, User.AUDIT_TYPE, meera.getId(), null, null), null),
+				AuditEventRepository.NEWEST_FIRST).reversed();
+		assertThat(trail).extracting(AuditEvent::getAction)
+			.containsExactly(AuditAction.PASSWORD_RESET, AuditAction.LOGIN_FAILED, AuditAction.LOGIN_SUCCEEDED);
+		// Nobody was signed in: the link's owner is the actor.
+		assertThat(trail.getFirst().getActorEmail()).isEqualTo(EMAIL);
+		assertThat(trail.getFirst().getSummary())
+			.isEqualTo("Chose a new password from a reset link; open sessions were signed out");
 
 		// Single use.
 		String used = mvc.perform(get("/password/reset").param("token", token))

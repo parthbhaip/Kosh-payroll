@@ -9,6 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditService;
+import com.kosh.audit.AuditService.Actor;
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.Fmt;
 import com.kosh.common.NotFoundException;
@@ -34,16 +37,19 @@ public class AccountService {
 
 	private final PasswordLinkService links;
 
+	private final AuditService audit;
+
 	private final Fmt fmt;
 
 	private final Clock clock;
 
 	public AccountService(UserRepository users, PasswordEncoder passwordEncoder, SignedInSessions sessions,
-			PasswordLinkService links, Fmt fmt, Clock clock) {
+			PasswordLinkService links, AuditService audit, Fmt fmt, Clock clock) {
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
 		this.sessions = sessions;
 		this.links = links;
+		this.audit = audit;
 		this.fmt = fmt;
 		this.clock = clock;
 	}
@@ -66,6 +72,8 @@ public class AccountService {
 		}
 		if (!matches(currentPassword, user)) {
 			if (user.recordLoginFailure(now)) {
+				audit.recordAs(Actor.SYSTEM, AuditAction.ACCOUNT_LOCKED, User.AUDIT_TYPE, user.getId(),
+						user.lockedSummary(), null);
 				throw locked(user);
 			}
 			throw new BusinessRuleException("currentPassword", WRONG_CURRENT);
@@ -78,6 +86,8 @@ public class AccountService {
 		user.clearLoginFailures();
 		links.spendAllLinks(user);
 		sessions.end(user.getEmail(), keepSessionId);
+		audit.record(AuditAction.PASSWORD_CHANGED, User.AUDIT_TYPE, user.getId(),
+				"Changed their password; their other sessions were signed out");
 	}
 
 	private boolean matches(String password, User user) {

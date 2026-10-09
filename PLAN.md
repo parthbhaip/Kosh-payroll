@@ -62,7 +62,7 @@ How this file works
 - [x] T09 Password reset, change password, lockout
   - Forgot password (same response whether the email exists), reset with a 30-minute single-use hashed token, change password (current required), lock for 15 minutes after 5 failed logins, friendly messages. Bootstrap the first ADMIN from `ADMIN_EMAIL`/`ADMIN_PASSWORD` when none exists. Tests.
 
-- [ ] T10 Audit log
+- [x] T10 Audit log
   - `AuditEvent` (actor, action, entity type/id, summary, before/after JSON for changed fields with sensitive values masked, IP, timestamp) + `AuditService` used by later tasks; login success/failure and role changes recorded now.
   - `/admin/audit` with filters (actor, action, entity, date range), paginated, CSV export. Tests.
 

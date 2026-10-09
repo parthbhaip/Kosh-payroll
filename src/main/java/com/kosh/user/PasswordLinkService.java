@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditService;
+import com.kosh.audit.AuditService.Actor;
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.HmacHasher;
 import com.kosh.security.SignedInSessions;
@@ -54,15 +57,18 @@ public class PasswordLinkService {
 
 	private final SignedInSessions sessions;
 
+	private final AuditService audit;
+
 	private final SecureRandom random = new SecureRandom();
 
 	public PasswordLinkService(UserTokenRepository tokens, HmacHasher hasher, PasswordEncoder passwordEncoder,
-			Clock clock, SignedInSessions sessions) {
+			Clock clock, SignedInSessions sessions, AuditService audit) {
 		this.tokens = tokens;
 		this.hasher = hasher;
 		this.passwordEncoder = passwordEncoder;
 		this.clock = clock;
 		this.sessions = sessions;
+		this.audit = audit;
 	}
 
 	/** Issues a new link for the user and spends their older unused links of the same purpose. */
@@ -100,6 +106,12 @@ public class PasswordLinkService {
 		user.clearLoginFailures();
 		spendAllLinks(user);
 		sessions.end(user.getEmail(), null);
+		// Nobody is signed in yet: the link's owner is the actor.
+		audit.recordAs(new Actor(user.getEmail(), user.getDisplayName()),
+				(purpose == Purpose.INVITE) ? AuditAction.INVITE_ACCEPTED : AuditAction.PASSWORD_RESET, User.AUDIT_TYPE,
+				user.getId(), (purpose == Purpose.INVITE) ? "Set a first password from the invite link"
+						: "Chose a new password from a reset link; open sessions were signed out",
+				null);
 		return user;
 	}
 

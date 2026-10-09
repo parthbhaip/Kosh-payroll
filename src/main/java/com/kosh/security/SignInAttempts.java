@@ -13,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditService;
+import com.kosh.audit.AuditService.Actor;
 import com.kosh.user.User;
 import com.kosh.user.UserRepository;
 
@@ -21,7 +24,8 @@ import com.kosh.user.UserRepository;
  * ({@link User#recordLoginFailure}: the fifth in a row locks it for 15 minutes) and a sign-in clears the count and
  * records when it happened. Unknown e-mails and invited accounts without a password count nothing. A locked account
  * is refused before its password is checked, so tries during a lock neither count nor extend it. The wrong password
- * that locks the account marks its request ({@link #LOCKED_NOW}) so the answer can say so at once. Only interactive
+ * that locks the account marks its request ({@link #LOCKED_NOW}) so the answer can say so at once, and the lock goes in
+ * the audit log ({@link SignInAudit} records the sign-in attempts themselves). Only interactive
  * sign-ins (form and remember-me) are recorded, never per-request tokens such as an API's.
  */
 @Component
@@ -32,10 +36,13 @@ class SignInAttempts {
 
 	private final UserRepository users;
 
+	private final AuditService audit;
+
 	private final Clock clock;
 
-	SignInAttempts(UserRepository users, Clock clock) {
+	SignInAttempts(UserRepository users, AuditService audit, Clock clock) {
 		this.users = users;
+		this.audit = audit;
 		this.clock = clock;
 	}
 
@@ -50,6 +57,8 @@ class SignInAttempts {
 				.ifPresent(user -> {
 					if (user.recordLoginFailure(now)) {
 						markRequest();
+						audit.recordAs(Actor.SYSTEM, AuditAction.ACCOUNT_LOCKED, User.AUDIT_TYPE, user.getId(),
+								user.lockedSummary(), null);
 					}
 				});
 		}

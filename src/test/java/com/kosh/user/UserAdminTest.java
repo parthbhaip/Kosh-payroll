@@ -54,6 +54,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditEvent;
+import com.kosh.audit.AuditEventRepository;
+import com.kosh.audit.AuditFilter;
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.HmacHasher;
 import com.kosh.notification.MailService;
@@ -96,13 +100,15 @@ class UserAdminTest {
 
 	private final PasswordEncoder passwordEncoder;
 
+	private final AuditEventRepository events;
+
 	private String passwordHash;
 
 	private User admin;
 
 	@Autowired
 	UserAdminTest(MockMvc mvc, UserRepository users, UserTokenRepository tokens, UserAdminService service,
-			MailService mail, HmacHasher hasher, PasswordEncoder passwordEncoder) {
+			MailService mail, HmacHasher hasher, PasswordEncoder passwordEncoder, AuditEventRepository events) {
 		this.mvc = mvc;
 		this.users = users;
 		this.tokens = tokens;
@@ -110,6 +116,7 @@ class UserAdminTest {
 		this.mail = mail;
 		this.hasher = hasher;
 		this.passwordEncoder = passwordEncoder;
+		this.events = events;
 	}
 
 	@BeforeEach
@@ -388,7 +395,7 @@ class UserAdminTest {
 		// Another invite inserted the e-mail between the duplicate check and this insert.
 		UserRepository racing = mock(UserRepository.class);
 		when(racing.save(any(User.class))).thenThrow(new DataIntegrityViolationException("uk_users_email"));
-		UserAdminService unproxied = new UserAdminService(racing, null, null, null, null, null, null, null);
+		UserAdminService unproxied = new UserAdminService(racing, null, null, null, null, null, null, null, null);
 
 		assertThatThrownBy(() -> unproxied.invite("Meera Deshpande", "meera.deshpande" + DOMAIN,
 				Set.of(Role.HR, Role.EMPLOYEE), null))
@@ -731,7 +738,94 @@ class UserAdminTest {
 		assertThat(login).contains("Your account was changed, so you were signed out. Sign in again to continue.");
 	}
 
+	// ------------------------------------------------------------------ audit
+
+	@Test
+	void everyAccountChangeGoesInTheAuditLogWithWhoDidItAndWhatChanged() throws Exception {
+		User meera = invited("meera.deshpande" + DOMAIN, "Meera Deshpande");
+		String path = "/admin/users/" + meera.getId();
+		mvc.perform(post(path).param("displayName", "Meera Deshpande")
+			.param("roles", "PAYROLL", "EMPLOYEE")
+			.with(asAdmin())
+			.with(csrf())
+			.with(from("203.0.113.7"))).andExpect(status().isFound());
+		mvc.perform(post(path).param("displayName", "Meera S. Deshpande")
+			.param("roles", "PAYROLL", "EMPLOYEE")
+			.with(asAdmin())
+			.with(csrf())).andExpect(status().isFound());
+		// Saving without a change records nothing.
+		mvc.perform(post(path).param("displayName", "Meera S. Deshpande")
+			.param("roles", "EMPLOYEE", "PAYROLL")
+			.with(asAdmin())
+			.with(csrf())).andExpect(status().isFound());
+		mvc.perform(post(path + "/invite").with(asAdmin()).with(csrf())).andExpect(status().isFound());
+		mvc.perform(post(path + "/disable").with(asAdmin()).with(csrf())).andExpect(status().isFound());
+		mvc.perform(post(path + "/enable").with(asAdmin()).with(csrf())).andExpect(status().isFound());
+		// A refused change records nothing either.
+		mvc.perform(post("/admin/users/" + admin.getId() + "/disable").with(asAdmin()).with(csrf()))
+			.andExpect(status().isFound());
+
+		List<AuditEvent> trail = eventsOf(meera);
+		assertThat(trail).extracting(AuditEvent::getAction)
+			.containsExactly(AuditAction.USER_INVITED, AuditAction.ROLES_CHANGED, AuditAction.USER_UPDATED,
+					AuditAction.INVITE_RESENT, AuditAction.USER_DISABLED, AuditAction.USER_ENABLED);
+		assertThat(trail).allSatisfy(event -> {
+			assertThat(event.getActorEmail()).isEqualTo(admin.getEmail());
+			assertThat(event.getActorName()).isEqualTo("Asha Patil");
+			assertThat(event.getEntityType()).isEqualTo("User");
+		});
+		assertThat(trail).extracting(AuditEvent::getSummary)
+			.containsExactly("Invited Meera Deshpande (meera.deshpande@admin.kosh.test)",
+					"Changed roles for Meera Deshpande", "Renamed Meera Deshpande to Meera S. Deshpande",
+					"Sent a new invite to meera.deshpande@admin.kosh.test; the earlier link stopped working",
+					"Disabled Meera S. Deshpande; their open sessions were ended", "Enabled Meera S. Deshpande");
+		assertThat(trail.get(0).getBeforeJson()).isEqualTo("{\"Name\":null,\"Email\":null,\"Roles\":null}");
+		assertThat(trail.get(0).getAfterJson()).isEqualTo(
+				"{\"Name\":\"Meera Deshpande\",\"Email\":\"meera.deshpande@admin.kosh.test\",\"Roles\":\"HR, Employee\"}");
+		assertThat(trail.get(1).getBeforeJson()).isEqualTo("{\"Roles\":\"HR, Employee\"}");
+		assertThat(trail.get(1).getAfterJson()).isEqualTo("{\"Roles\":\"Payroll, Employee\"}");
+		assertThat(trail.get(1).getIpAddress()).isEqualTo("203.0.113.7");
+		assertThat(trail.get(2).getBeforeJson()).isEqualTo("{\"Name\":\"Meera Deshpande\"}");
+		assertThat(trail.get(2).getAfterJson()).isEqualTo("{\"Name\":\"Meera S. Deshpande\"}");
+		assertThat(eventsOf(admin)).isEmpty();
+		assertThat(page(get(path), "admin/users/edit"))
+			.contains("<a href=\"/admin/audit?entity=User&amp;entityId=" + meera.getId() + "\">View in audit log</a>");
+	}
+
+	@Test
+	void acceptingAnInviteIsRecordedWithTheNewUserAsTheActor() throws Exception {
+		User meera = invited("meera.deshpande" + DOMAIN, "Meera Deshpande");
+		String token = token(sentBody(meera.getEmail(), "You're invited to Kosh"));
+
+		mvc.perform(post("/password/set").param("token", token)
+			.param("password", "Kolhapur@2026")
+			.param("confirmPassword", "Kolhapur@2026")
+			.with(csrf())).andExpect(redirectedUrl("/login"));
+
+		AuditEvent accepted = eventsOf(meera).getLast();
+		assertThat(accepted.getAction()).isEqualTo(AuditAction.INVITE_ACCEPTED);
+		assertThat(accepted.getActorEmail()).isEqualTo(meera.getEmail());
+		assertThat(accepted.getActorName()).isEqualTo("Meera Deshpande");
+		assertThat(accepted.getSummary()).isEqualTo("Set a first password from the invite link");
+		assertThat(accepted.getBeforeJson()).isNull();
+	}
+
 	// ------------------------------------------------------------------ helpers
+
+	/** The user's audit events, oldest first. */
+	private List<AuditEvent> eventsOf(User user) {
+		return events
+			.findAll(AuditEventRepository.matching(new AuditFilter(null, null, User.AUDIT_TYPE, user.getId(), null, null),
+					null), AuditEventRepository.NEWEST_FIRST)
+			.reversed();
+	}
+
+	private static RequestPostProcessor from(String address) {
+		return request -> {
+			request.setRemoteAddr(address);
+			return request;
+		};
+	}
 
 	private User save(String email, String displayName, Role... roles) {
 		User user = new User(email, displayName, Set.of(roles));

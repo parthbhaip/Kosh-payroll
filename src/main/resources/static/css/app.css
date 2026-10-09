@@ -3126,3 +3126,79 @@ a.page-link:not([aria-current]):hover {
 		grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
 	}
 }
+
+/* ---------------------------------------------------------------- Audit log */
+.audit-summary {
+	margin: 0;
+}
+
+/* "2 fields changed" opens a small before/after table under the summary. */
+.audit-changes {
+	margin-top: var(--space-1);
+}
+
+.audit-changes summary {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	border-radius: var(--radius-sm);
+	color: var(--color-primary);
+	font-size: var(--text-xs);
+	font-weight: 600;
+	list-style: none;
+	cursor: pointer;
+}
+
+.audit-changes summary::-webkit-details-marker {
+	display: none;
+}
+
+.audit-changes summary:hover {
+	color: var(--color-primary-hover);
+	text-decoration: underline;
+}
+
+.audit-changes summary .icon {
+	width: 16px;
+	height: 16px;
+	transition: transform var(--duration-fast) ease;
+}
+
+.audit-changes[open] summary .icon {
+	transform: rotate(180deg);
+}
+
+.change-table {
+	margin-top: var(--space-2);
+	border-collapse: collapse;
+	font-size: var(--text-xs);
+}
+
+/* Undo the outer data table's cell rules (sticky header, wide padding, no wrapping) inside the nested table. */
+.table .change-table th,
+.table .change-table td {
+	position: static;
+	padding: var(--space-1) var(--space-4) var(--space-1) 0;
+	border-bottom: 1px solid var(--color-divider);
+	background: none;
+	color: var(--color-ink);
+	vertical-align: top;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.table .change-table thead th,
+.table .change-table tbody th {
+	color: var(--color-text-secondary);
+	font-weight: 600;
+}
+
+.table .change-table tr:last-child > * {
+	border-bottom: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.audit-changes summary .icon {
+		transition: none;
+	}
+}

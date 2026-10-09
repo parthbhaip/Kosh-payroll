@@ -18,6 +18,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kosh.audit.AuditAction;
+import com.kosh.audit.AuditChanges;
+import com.kosh.audit.AuditService;
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.Fmt;
 import com.kosh.common.NotFoundException;
@@ -31,7 +34,7 @@ import com.kosh.user.UserToken.Purpose;
  * User administration for ADMIN users (PLAN T08): the user list, invites with a set-password link, name and role
  * changes, and enabling or disabling accounts. Kosh always keeps an active admin: nobody disables themselves or removes
  * their own Admin role, and the last active admin keeps the role. Disabling a user or changing their roles ends their
- * open sessions, so the change applies on their next request.
+ * open sessions, so the change applies on their next request. Every change goes in the audit log.
  */
 @Service
 @PreAuthorize("hasRole('ADMIN')")
@@ -100,6 +103,8 @@ public class UserAdminService {
 
 	private final SignedInSessions sessions;
 
+	private final AuditService audit;
+
 	private final AppProperties app;
 
 	private final Fmt fmt;
@@ -107,12 +112,13 @@ public class UserAdminService {
 	private final Clock clock;
 
 	public UserAdminService(UserRepository users, UserTokenRepository tokens, PasswordLinkService links,
-			MailService mail, SignedInSessions sessions, AppProperties app, Fmt fmt, Clock clock) {
+			MailService mail, SignedInSessions sessions, AuditService audit, AppProperties app, Fmt fmt, Clock clock) {
 		this.users = users;
 		this.tokens = tokens;
 		this.links = links;
 		this.mail = mail;
 		this.sessions = sessions;
+		this.audit = audit;
 		this.app = app;
 		this.fmt = fmt;
 		this.clock = clock;
@@ -166,6 +172,12 @@ public class UserAdminService {
 			throw new BusinessRuleException("email", EMAIL_TAKEN);
 		}
 		sendInvite(user, actor);
+		audit.record(AuditAction.USER_INVITED, User.AUDIT_TYPE, user.getId(),
+				"Invited %s (%s)".formatted(user.getDisplayName(), user.getEmail()),
+				AuditChanges.create()
+					.field("Name", null, user.getDisplayName())
+					.field("Email", null, user.getEmail())
+					.field("Roles", null, Role.labels(user.getRoles())));
 		return user.getId();
 	}
 
@@ -182,10 +194,19 @@ public class UserAdminService {
 			keepAnActiveAdmin(user, "roles");
 		}
 		boolean rolesChanged = !user.getRoles().equals(Set.copyOf(roles));
+		String oldName = user.getDisplayName();
+		AuditChanges changes = AuditChanges.create().field("Roles", Role.labels(user.getRoles()), Role.labels(roles));
 		user.setDisplayName(name);
 		user.setRoles(roles);
 		if (rolesChanged && !self) {
 			endSessions(user);
+		}
+		changes.field("Name", oldName, user.getDisplayName());
+		if (!changes.isEmpty()) {
+			audit.record(rolesChanged ? AuditAction.ROLES_CHANGED : AuditAction.USER_UPDATED, User.AUDIT_TYPE,
+					user.getId(), rolesChanged ? "Changed roles for " + user.getDisplayName()
+							: "Renamed %s to %s".formatted(oldName, user.getDisplayName()),
+					changes);
 		}
 		return new Saved(user.getDisplayName(), rolesChanged, self);
 	}
@@ -202,6 +223,8 @@ public class UserAdminService {
 		}
 		user.setEnabled(false);
 		endSessions(user);
+		audit.record(AuditAction.USER_DISABLED, User.AUDIT_TYPE, user.getId(),
+				"Disabled " + user.getDisplayName() + "; their open sessions were ended");
 		return user.getDisplayName();
 	}
 
@@ -209,7 +232,10 @@ public class UserAdminService {
 	@Transactional
 	public String enable(long id) {
 		User user = find(id);
-		user.setEnabled(true);
+		if (!user.isEnabled()) {
+			user.setEnabled(true);
+			audit.record(AuditAction.USER_ENABLED, User.AUDIT_TYPE, user.getId(), "Enabled " + user.getDisplayName());
+		}
 		return user.getDisplayName();
 	}
 
@@ -224,12 +250,14 @@ public class UserAdminService {
 			throw new BusinessRuleException(null, "Enable the account before sending a new invite.");
 		}
 		sendInvite(user, actor);
+		audit.record(AuditAction.INVITE_RESENT, User.AUDIT_TYPE, user.getId(),
+				"Sent a new invite to " + user.getEmail() + "; the earlier link stopped working");
 		return user.getEmail();
 	}
 
 	private void sendInvite(User user, Authentication actor) {
 		PasswordLinkService.Link link = links.issue(user, Purpose.INVITE);
-		String roles = sorted(user.getRoles()).stream().map(Role::label).collect(Collectors.joining(", "));
+		String roles = String.join(", ", Role.labels(user.getRoles()));
 		String body = """
 				Hello %s,
 
