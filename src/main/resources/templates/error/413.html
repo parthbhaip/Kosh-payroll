@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/error :: page(code='413', title='File too large', heading='That file is too large', message=~{::message})}">
+<body>
+	<p class="error-card__text" th:fragment="message">Uploads can be up to 5 MB. Nothing was saved. Go back, choose a smaller file and upload it again.</p>
+</body>
+</html>

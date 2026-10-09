@@ -54,6 +54,17 @@ class AuditChangesTest {
 	}
 
 	@Test
+	void aChangePastTheCutIsStillAChange() {
+		String longText = "x".repeat(AuditChanges.MAX_VALUE + 10);
+		AuditChanges changes = AuditChanges.create()
+			.field("Long", longText, longText + "y")
+			.field("Same", longText, longText);
+
+		assertThat(changes.after()).containsOnlyKeys("Long");
+		assertThat(changes.after().get("Long")).hasSize(AuditChanges.MAX_VALUE).endsWith("…");
+	}
+
+	@Test
 	void beforeAndAfterBecomeJsonObjectsOfTheSameFields() {
 		String[] json = AuditService.json(AuditChanges.create()
 			.field("Roles", "HR, Employee", "Payroll, Employee")

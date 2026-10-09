@@ -59,6 +59,8 @@ class AccessRulesTest {
 		// Paths below an area follow the area: 404 where the role is allowed (no page yet), 403 where it is not.
 		expect("/admin/users", granted, admin);
 		expect("/admin/audit", granted, admin);
+		expect("/admin/company", granted, admin);
+		expect("/admin/company/pay-settings", granted, admin);
 		expect("/admin/statutory", granted, (admin == 200) ? 404 : admin);
 		expect("/hr/employees", granted, (hr == 200) ? 404 : hr);
 		expect("/me/payslips", granted, (me == 200) ? 404 : me);

@@ -35,9 +35,9 @@ public final class AuditChanges {
 	}
 
 	/**
-	 * Adds the field when its value changed, compared as text. Null stays empty, {@link BigDecimal} is written plain
-	 * ({@code 1500.00}), a collection as its items joined by commas (pass them in a stable order), anything else by
-	 * {@code toString()}.
+	 * Adds the field when its value changed, compared as the full text (only the stored values are cut). Null stays
+	 * empty, {@link BigDecimal} is written plain ({@code 1500.00}), a collection as its items joined by commas (pass them
+	 * in a stable order), anything else by {@code toString()}.
 	 */
 	public AuditChanges field(String name, Object oldValue, Object newValue) {
 		String was = text(oldValue);
@@ -80,25 +80,21 @@ public final class AuditChanges {
 
 	private void put(String name, String was, String now) {
 		String field = cut(Objects.requireNonNull(name, "name"), MAX_FIELD);
-		before.put(field, was);
-		after.put(field, now);
+		before.put(field, (was == null) ? null : cut(was, MAX_VALUE));
+		after.put(field, (now == null) ? null : cut(now, MAX_VALUE));
 	}
 
 	private static String text(Object value) {
 		if (value == null) {
 			return null;
 		}
-		String text;
 		if (value instanceof BigDecimal amount) {
-			text = amount.toPlainString();
+			return amount.toPlainString();
 		}
-		else if (value instanceof Collection<?> items) {
-			text = items.stream().map(String::valueOf).collect(Collectors.joining(", "));
+		if (value instanceof Collection<?> items) {
+			return items.stream().map(String::valueOf).collect(Collectors.joining(", "));
 		}
-		else {
-			text = value.toString();
-		}
-		return cut(text, MAX_VALUE);
+		return value.toString();
 	}
 
 	/** The text, or its first {@code max - 1} characters and an ellipsis. Also used by {@link AuditService}. */

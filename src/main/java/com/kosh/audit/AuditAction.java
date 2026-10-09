@@ -19,7 +19,10 @@ public enum AuditAction {
 	USER_DISABLED("User disabled", "warning"),
 	USER_ENABLED("User enabled", "success"),
 	ADMIN_BOOTSTRAPPED("Admin set up at startup", "warning"),
-	AUDIT_EXPORTED("Audit log exported", null);
+	AUDIT_EXPORTED("Audit log exported", null),
+	COMPANY_DETAILS_CHANGED("Company details changed", "info"),
+	COMPANY_LOGO_CHANGED("Company logo changed", null),
+	PAY_SETTINGS_CHANGED("Pay settings changed", "info");
 
 	private final String label;
 

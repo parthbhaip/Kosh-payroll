@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Pay settings', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/admin}">Admin</a></li>
+	<li><a th:href="@{/admin/company}">Company</a></li>
+</th:block>
+<th:block th:fragment="content">
+	<nav th:replace="~{admin/company/parts :: tabs('pay')}"></nav>
+
+	<div class="detail-layout">
+		<form class="card" method="post" th:action="@{/admin/company/pay-settings}" th:object="${form}" aria-labelledby="pay-title" novalidate>
+			<div class="card-header">
+				<div>
+					<h2 class="card-title" id="pay-title">How payroll is worked out</h2>
+					<p class="card-subtitle">Payroll runs read these when they are calculated. Finalized payslips never change.</p>
+				</div>
+			</div>
+			<div class="card-body">
+				<p th:replace="~{admin/company/parts :: globalErrors}"></p>
+				<section class="form-section" aria-labelledby="section-cycle">
+					<h3 class="form-section-title" id="section-cycle">Pay cycle</h3>
+					<p class="form-section-text">The pay period is the calendar month. Days below are days of the following month.</p>
+					<div class="form-grid">
+						<fieldset class="fieldset span-all" th:with="invalid=${#fields.hasErrors('prorationMethod')}"
+							th:attr="aria-describedby=${invalid} ? 'prorationMethod-error'">
+							<legend>Proration for part months</legend>
+							<label class="check" th:each="method : ${prorationMethods}">
+								<input class="radio" type="radio" th:field="*{prorationMethod}" th:value="${method.name()}"
+									th:attr="aria-describedby=${'proration-help-' + method.name()}">
+								<span class="check-text"><th:block th:text="${method.label()}">Calendar days</th:block>
+									<span class="help" th:id="${'proration-help-' + method.name()}" th:text="${method.description()}">Monthly amount × paid days ÷ days in the month.</span>
+								</span>
+							</label>
+							<p class="error-text" id="prorationMethod-error" th:if="${invalid}">
+								<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('prorationMethod'), ' ')}">Choose how to prorate.</span>
+							</p>
+						</fieldset>
+						<div th:replace="~{fragments/form :: select(name='payDay', label='Pay day', options=${payDays}, help='Salaries reach bank accounts on this day. Wages are due by the 7th.')}"></div>
+						<div th:replace="~{fragments/form :: select(name='attendanceCutoffDay', label='Attendance cut-off', options=${cutoffDays}, help='The month’s attendance is closed by this day, before pay day.')}"></div>
+					</div>
+				</section>
+
+				<section class="form-section" aria-labelledby="section-pf">
+					<h3 class="form-section-title" id="section-pf">Provident fund and CTC</h3>
+					<div class="form-grid">
+						<fieldset class="fieldset span-all" th:with="invalid=${#fields.hasErrors('defaultPfPolicy')}"
+							th:attr="aria-describedby=${invalid} ? 'defaultPfPolicy-error'">
+							<legend>Default PF policy for new employees</legend>
+							<label class="check" th:each="policy : ${pfPolicies}">
+								<input class="radio" type="radio" th:field="*{defaultPfPolicy}" th:value="${policy.name()}"
+									th:attr="aria-describedby=${'pf-help-' + policy.name()}">
+								<span class="check-text"><th:block th:text="${policy.label()}">Restrict to the wage ceiling</th:block>
+									<span class="help" th:id="${'pf-help-' + policy.name()}" th:text="${policy.description()}">PF on wages up to the ceiling.</span>
+								</span>
+							</label>
+							<p class="help">HR can change the policy for each employee, and opt out an eligible joiner.</p>
+							<p class="error-text" id="defaultPfPolicy-error" th:if="${invalid}">
+								<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('defaultPfPolicy'), ' ')}">Choose the default PF policy.</span>
+							</p>
+						</fieldset>
+						<fieldset class="fieldset span-all">
+							<legend>What counts towards CTC</legend>
+							<label class="check">
+								<input class="switch" type="checkbox" role="switch" th:field="*{pfChargesInCtc}" aria-describedby="pf-charges-help">
+								<span class="check-text">PF admin charges and EDLI
+									<span class="help" id="pf-charges-help">The employer’s PF admin charges and EDLI premium are part of monthly CTC.</span>
+								</span>
+							</label>
+							<label class="check">
+								<input class="switch" type="checkbox" role="switch" th:field="*{gratuityInCtc}" aria-describedby="gratuity-help">
+								<span class="check-text">Gratuity provision
+									<span class="help" id="gratuity-help">A monthly provision for gratuity, on Basic + DA, is part of monthly CTC.</span>
+								</span>
+							</label>
+						</fieldset>
+					</div>
+				</section>
+
+				<section class="form-section" aria-labelledby="section-leave-tax">
+					<h3 class="form-section-title" id="section-leave-tax">Leave encashment and HRA</h3>
+					<div class="form-grid">
+						<div th:replace="~{fragments/form :: input(name='leaveEncashmentDivisor', label='Leave encashment divisor', type='number', help='One day’s pay is (Basic + DA) ÷ this number. Usually 30, or 26 for working days.')}"></div>
+						<div class="span-all">
+							<div th:replace="~{fragments/form :: textarea(name='metroCities', label='Metro cities for HRA', rows=3, help='Separate cities with commas. Under the old tax regime, rent in these cities is exempt up to 50% of Basic + DA; elsewhere 40%.')}"></div>
+						</div>
+					</div>
+				</section>
+
+				<section class="form-section" aria-labelledby="section-due">
+					<h3 class="form-section-title" id="section-due">Statutory due dates</h3>
+					<p class="form-section-text">When each payment falls due, as a day of the following month.</p>
+					<div class="form-grid">
+						<div th:replace="~{fragments/form :: select(name='pfDueDay', label='PF remittance', options=${dueDays})}"></div>
+						<div th:replace="~{fragments/form :: select(name='esiDueDay', label='ESI remittance', options=${dueDays})}"></div>
+						<div th:replace="~{fragments/form :: select(name='tdsDueDay', label='TDS deposit', options=${dueDays})}"></div>
+						<div th:replace="~{fragments/form :: select(name='ptDueDay', label='Professional tax', options=${dueDays}, help='Last day of the month suits monthly PTRC payers in Maharashtra.')}"></div>
+					</div>
+				</section>
+
+				<div class="form-actions">
+					<button class="btn btn-primary" type="submit">Save pay settings</button>
+				</div>
+			</div>
+		</form>
+
+		<div class="detail-side">
+			<section class="card" aria-labelledby="dates-title">
+				<div class="card-header">
+					<div>
+						<h2 class="card-title" id="dates-title" th:text="|${@fmt.month(month)} payroll|">September 2026 payroll</h2>
+						<p class="card-subtitle">Key dates with the saved settings.</p>
+					</div>
+				</div>
+				<div class="card-body stack">
+					<div class="flash flash-warning" role="status" th:if="${saved.payDayIsLate()}">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+						<div>
+							<p class="flash-title">Pay day is after the 7th</p>
+							<p class="flash-text" th:text="|Wages are due by the 7th of the following month. ${@fmt.month(month)} salaries would be paid on ${@fmt.date(saved.payDate(month))}.|">
+								Wages are due by the 7th of the following month.</p>
+						</div>
+					</div>
+					<dl class="dl">
+						<dt>Attendance closes</dt>
+						<dd th:text="${@fmt.date(saved.attendanceCutoff(month))}">3 Oct 2026</dd>
+						<dt>Salaries paid</dt>
+						<dd th:text="${@fmt.date(saved.payDate(month))}">7 Oct 2026</dd>
+						<dt>TDS deposit due</dt>
+						<dd th:text="${@fmt.date(saved.tdsDue(month))}">7 Oct 2026</dd>
+						<dt>PF due</dt>
+						<dd th:text="${@fmt.date(saved.pfDue(month))}">15 Oct 2026</dd>
+						<dt>ESI due</dt>
+						<dd th:text="${@fmt.date(saved.esiDue(month))}">15 Oct 2026</dd>
+						<dt>PT due</dt>
+						<dd th:text="${@fmt.date(saved.ptDue(month))}">31 Oct 2026</dd>
+					</dl>
+				</div>
+				<div th:replace="~{admin/company/parts :: auditFooter('Every change is recorded')}"></div>
+			</section>
+		</div>
+	</div>
+</th:block>
+</body>
+</html>

@@ -20,7 +20,7 @@ Rules change. Before any demo, a team member must re-check every row against the
 | EPF admin charges (employer) | 0.5% of EPF wages; minimum ₹500 per month per establishment |
 | EDLI admin charges | Nil (waived from 1 Apr 2017) |
 | Membership above the ceiling | Optional for new joiners whose PF wages exceed ₹15,000 and who were never PF members |
-| Remittance due day (seed) | 15th of the following month |
+| Remittance due day (seed) | 15th of the following month - a company pay setting since T11 (`company.pf_due_day`); T14's PF tables must not repeat it |
 
 Sources: [Indian Pay Calculator - ceiling stays ₹15,000 (29 May 2026 notification)](https://www.indianpaycalculator.in/govt-news/epf-wage-ceiling-stays-15000-ss-code-2026), [CA Club - admin charges 0.5% and EDLI admin waived](https://caclub.in/pf-admin-charges-reduced-and-edli-admin-charges-waived-by-epfo)
 
@@ -32,7 +32,7 @@ Sources: [Indian Pay Calculator - ceiling stays ₹15,000 (29 May 2026 notificat
 | Employer share | 3.25% of ESI wages |
 | Low-wage exemption | Average daily wage ≤ ₹176: employee share nil, employer share still payable |
 | Contribution periods | 1 Apr - 30 Sep and 1 Oct - 31 Mar; once covered in a period, contributions continue to its end even if wages rise above the ceiling |
-| Remittance due day (seed) | 15th of the following month |
+| Remittance due day (seed) | 15th of the following month - a company pay setting since T11 (`company.esi_due_day`); T14's ESI tables must not repeat it |
 
 No ceiling revision had been notified as of June 2026.
 Source: [Bhatt & Joshi Associates - ESIC wage ceiling (2026)](https://bhattandjoshiassociates.com/esic-wage-ceiling-change-what-it-would-mean-for-employers/)
@@ -76,11 +76,14 @@ The new regime is the default. Budget 2026 made no change to slabs, standard ded
 Slabs (below 60 years): up to ₹2,50,000 nil; ₹2,50,001 - ₹5,00,000 5%; ₹5,00,001 - ₹10,00,000 20%; above ₹10,00,000 30%. Standard deduction ₹50,000. Rebate ₹12,500 when total income ≤ ₹5,00,000. Cess 4%. Surcharge 10% / 15% / 25% / 37% above ₹50 lakh / ₹1 crore / ₹2 crore / ₹5 crore.
 **Verify before demo:** the deduction caps Kosh uses under the old regime are seed values carried over from the 1961 Act: ₹1,50,000 investments (old 80C), ₹25,000 health insurance for self/family under 60 (old 80D), ₹2,00,000 home-loan interest on a self-occupied house, HRA exemption, and professional tax. Section numbers changed under the 2025 Act; store them as configurable caps, not section numbers in code.
 
+HRA exemption cities (checked 9 October 2026): from tax year 2026-27 the Income-tax Rules, 2026 (notified 20 March 2026, in force 1 April 2026) allow 50% of (Basic + DA) in **Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Pune and Ahmedabad**; every other city 40%. The old rules had only the first four. Kosh keeps this list as the company pay setting "HRA metro cities" (seeded by T11's migration, editable), not in a T14 rule table. Read from tax-advisory summaries, not the gazette text; verify before a demo.
+Sources: [ClearTax - HRA under the new Income Tax Rules 2026](https://cleartax.in/s/hra-house-rent-allowance), [Moneylife - HRA exemption extended to 8 cities from 1 April](https://moneylife.in/article/new-income-tax-rules-from-1st-april-hra-exemption-extended-to-8-cities-fewer-forms-but-landlord-disclosure-now-mandatory/79998.html), [Indian Pay Calculator - 50% HRA in 8 cities](https://www.indianpaycalculator.in/govt-news/hra-50-percent-exemption-8-cities-2026)
+
 ### Forms (names only - Kosh produces "style" documents, not official filings)
 - Employee declaration of deductions: **Form 124** (replaces Form 12BB from tax year 2026-27)
 - Annual TDS certificate for salary: **Form 130** (replaces Form 16 from tax year 2026-27; Parts A, B, C)
 - Quarterly salary TDS return: **Form 138** (replaces Form 24Q)
-- TDS deposit due day (seed): 7th of the following month (configurable)
+- TDS deposit due day (seed): 7th of the following month - a company pay setting since T11 (`company.tds_due_day`), not a T14 rule table
 
 Sources: [Bhatt & Joshi - Budget 2026-27 income tax changes](https://bhattandjoshiassociates.com/indian-union-budget-2026-27-key-income-tax-changes-and-their-impact-on-salaried-individuals/), [TaxGuru - new regime slabs](https://taxguru.in/?p=1024891), [TaxHeal - FY 2026-27 slabs (old regime)](https://www.taxheal.com/income-tax-slab-for-fy-2026-27.html), [SCC Online - Form 130 vs Form 16](https://www.scconline.com/blog/post/2026/06/15/overview-comparison-of-form-16-and-form-130-tds-certificate/), [Indian Pay Calculator - Form 124](https://www.indianpaycalculator.in/form-124-form-12bb)
 

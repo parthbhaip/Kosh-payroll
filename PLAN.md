@@ -68,7 +68,7 @@ How this file works
 
 ## Phase 2 - Company setup and statutory rules
 
-- [ ] T11 Company profile and pay settings
+- [x] T11 Company profile and pay settings
   - Company profile: legal name, brand name, address, PAN, TAN, PF establishment code, ESI employer code, PT registration (MH), logo upload, authorised signatory name and designation.
   - Pay settings: proration method, pay day, attendance cut-off day, default PF policy, gratuity provision in CTC (on/off), leave-encashment divisor, metro city list for HRA, compliance due days (PF 15, ESI 15, TDS 7, PT last day).
   - Pages under `/admin/company`; all changes audited. Tests.

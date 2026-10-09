@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Company details', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/admin}">Admin</a></li></th:block>
+<th:block th:fragment="content">
+	<nav th:replace="~{admin/company/parts :: tabs('details')}"></nav>
+
+	<div class="detail-layout">
+		<form class="card" method="post" th:action="@{/admin/company}" th:object="${form}" aria-labelledby="details-title" novalidate>
+			<div class="card-header">
+				<div>
+					<h2 class="card-title" id="details-title">The employer</h2>
+					<p class="card-subtitle">Printed on payslips, salary letters and statutory files exactly as entered here.</p>
+				</div>
+			</div>
+			<div class="card-body">
+				<p th:replace="~{admin/company/parts :: globalErrors}"></p>
+				<section class="form-section" aria-labelledby="section-name">
+					<h3 class="form-section-title" id="section-name">Name and address</h3>
+					<div class="form-grid">
+						<div th:replace="~{fragments/form :: input(name='legalName', label='Legal name', autocomplete='organization', help='As on the certificate of incorporation.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='brandName', label='Brand name', optional=true, autocomplete='off', help='A shorter name for everyday use. Leave empty to use the legal name.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='addressLine1', label='Address line 1', autocomplete='address-line1', help='Registered office: building, street.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='addressLine2', label='Address line 2', optional=true, autocomplete='address-line2', help='Area or landmark.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='city', label='City', autocomplete='address-level2')}"></div>
+						<div th:replace="~{fragments/form :: select(name='state', label='State', options=${states}, placeholder='Choose a state')}"></div>
+						<div th:replace="~{fragments/form :: input(name='pincode', label='PIN code', autocomplete='postal-code', help='6 digits.')}"></div>
+					</div>
+				</section>
+
+				<section class="form-section" aria-labelledby="section-registrations">
+					<h3 class="form-section-title" id="section-registrations">Registrations</h3>
+					<p class="form-section-text">Letters are saved in capitals and spaces are removed, so paste them as they appear on the certificates.</p>
+					<div class="form-grid">
+						<div th:replace="~{fragments/form :: input(name='pan', label='PAN', autocomplete='off', help='The company’s PAN, 10 characters. Printed on TDS statements.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='tan', label='TAN', autocomplete='off', help='Tax deduction account number, 10 characters.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='pfEstablishmentCode', label='PF establishment code', optional=true, autocomplete='off', help='15 characters from EPFO, for the ECR file.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='esiEmployerCode', label='ESI employer code', optional=true, autocomplete='off', help='17 digits from ESIC.')}"></div>
+						<div th:replace="~{fragments/form :: input(name='ptRegistrationNumber', label='PT registration (PTRC)', optional=true, autocomplete='off', help='Maharashtra PTRC number: 11 digits followed by P.')}"></div>
+					</div>
+				</section>
+
+				<section class="form-section" aria-labelledby="section-signatory">
+					<h3 class="form-section-title" id="section-signatory">Authorised signatory</h3>
+					<p class="form-section-text">Signs salary letters and CTC annexures. Payslips are computer-generated and carry no signature.</p>
+					<div class="form-grid">
+						<div th:replace="~{fragments/form :: input(name='signatoryName', label='Full name', optional=true, autocomplete='off')}"></div>
+						<div th:replace="~{fragments/form :: input(name='signatoryDesignation', label='Designation', optional=true, autocomplete='off', help='For example, Director or Head of HR.')}"></div>
+					</div>
+				</section>
+
+				<div class="form-actions">
+					<button class="btn btn-primary" type="submit">Save company details</button>
+				</div>
+			</div>
+		</form>
+
+		<div class="detail-side">
+			<section class="card" aria-labelledby="logo-title">
+				<div class="card-header">
+					<h2 class="card-title" id="logo-title">Logo</h2>
+				</div>
+				<div class="card-body stack">
+					<div class="logo-preview">
+						<img th:if="${hasLogo}" th:src="@{/admin/company/logo}" alt="Current company logo">
+						<p th:unless="${hasLogo}">No logo yet. Payslips show the company name in its place.</p>
+					</div>
+					<form method="post" enctype="multipart/form-data" th:action="@{/admin/company/logo}" class="stack">
+						<div class="field">
+							<label class="label" for="logo-file" th:text="${hasLogo} ? 'Replace with' : 'Upload a logo'">Upload a logo</label>
+							<input class="input" id="logo-file" type="file" name="file" accept="image/png,image/jpeg" required
+								aria-describedby="logo-help">
+							<p class="help" id="logo-help">PNG or JPG, up to 5 MB. A wide logo on a white or clear background prints best.</p>
+						</div>
+						<div class="cluster">
+							<button class="btn btn-secondary btn-sm" type="submit"><svg th:replace="~{fragments/icon :: icon('upload')}"></svg><th:block th:text="${hasLogo} ? 'Replace logo' : 'Upload logo'">Upload logo</th:block></button>
+						</div>
+					</form>
+					<form th:if="${hasLogo}" method="post" th:action="@{/admin/company/logo/remove}">
+						<button class="btn btn-ghost btn-sm" type="submit"><svg th:replace="~{fragments/icon :: icon('trash')}"></svg>Remove logo</button>
+					</form>
+				</div>
+			</section>
+
+			<section class="card" aria-labelledby="readiness-title">
+				<div class="card-header">
+					<h2 class="card-title" id="readiness-title">Ready for payroll outputs</h2>
+				</div>
+				<div class="card-body">
+					<p class="readiness-done" th:if="${gaps.isEmpty()}">
+						<svg th:replace="~{fragments/icon :: icon('check')}"></svg>Everything payslips and statutory files need is in place.
+					</p>
+					<th:block th:unless="${gaps.isEmpty()}">
+						<p class="readiness-lede" th:text="${gaps.size() == 1} ? '1 item is still missing:' : |${gaps.size()} items are still missing:|">3 items are still missing:</p>
+						<ul class="checklist">
+							<li th:each="gap : ${gaps}">
+								<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+								<div>
+									<p class="checklist-title" th:text="${gap.item()}">PF establishment code</p>
+									<p class="checklist-text" th:text="${gap.reason()}">Needed for the monthly PF ECR file.</p>
+								</div>
+							</li>
+						</ul>
+					</th:block>
+				</div>
+				<div th:replace="~{admin/company/parts :: auditFooter('Every change is recorded')}"></div>
+			</section>
+		</div>
+	</div>
+</th:block>
+</body>
+</html>
