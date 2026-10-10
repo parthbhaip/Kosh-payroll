@@ -22,7 +22,12 @@ public enum AuditAction {
 	AUDIT_EXPORTED("Audit log exported", null),
 	COMPANY_DETAILS_CHANGED("Company details changed", "info"),
 	COMPANY_LOGO_CHANGED("Company logo changed", null),
-	PAY_SETTINGS_CHANGED("Pay settings changed", "info");
+	PAY_SETTINGS_CHANGED("Pay settings changed", "info"),
+	ORG_ITEM_ADDED("Organisation item added", "info"),
+	ORG_ITEM_CHANGED("Organisation item changed", null),
+	ORG_ITEM_DEACTIVATED("Organisation item deactivated", "warning"),
+	ORG_ITEM_ACTIVATED("Organisation item activated", "success"),
+	ORG_ITEM_DELETED("Organisation item deleted", "danger");
 
 	private final String label;
 

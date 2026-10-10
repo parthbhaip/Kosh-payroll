@@ -95,6 +95,12 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 			where r = com.kosh.user.Role.ADMIN and u.enabled = true and u.passwordHash is not null and u.id <> :userId""")
 	long countOtherActiveAdmins(Long userId);
 
+	/** Enabled users with the Employee role, by name: the people who can head a department. */
+	@Query("""
+			select u from User u join u.roles r
+			where r = com.kosh.user.Role.EMPLOYEE and u.enabled = true order by u.displayName, u.id""")
+	List<User> findEnabledEmployees();
+
 	/** Admins who can sign in now (see {@link #countOtherActiveAdmins}). */
 	@Query("""
 			select count(u) from User u join u.roles r

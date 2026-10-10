@@ -73,7 +73,7 @@ How this file works
   - Pay settings: proration method, pay day, attendance cut-off day, default PF policy, gratuity provision in CTC (on/off), leave-encashment divisor, metro city list for HRA, compliance due days (PF 15, ESI 15, TDS 7, PT last day).
   - Pages under `/admin/company`; all changes audited. Tests.
 
-- [ ] T12 Organisation structure
+- [x] T12 Organisation structure
   - CRUD for departments (with head), designations, grades, cost centres, work locations (name, address, state code, PT applicable). Cannot delete when in use (deactivate instead). Seed nothing yet (T20 does). Tests.
 
 - [ ] T13 Holiday calendar and work week

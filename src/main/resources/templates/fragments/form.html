@@ -8,6 +8,11 @@
      Help and errors are tied to the control with aria-describedby; an error also sets aria-invalid. -->
 <body>
 
+<!-- Form-wide errors (a rule that belongs to no single field). Use inside the form's th:object. -->
+<p th:fragment="globalErrors" class="error-text form-error" role="alert" th:if="${#fields.hasGlobalErrors()}">
+	<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.globalErrors(), ' ')}">Enter the legal name, address, PAN and TAN.</span>
+</p>
+
 <div th:fragment="input" class="field"
 	th:with="invalid=${#fields.hasErrors(name)}, describedBy=${#strings.trim((help != null ? name + '-help ' : '') + (invalid ? name + '-error' : ''))}">
 	<label class="label" th:for="${name}">

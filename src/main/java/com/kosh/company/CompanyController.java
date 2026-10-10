@@ -4,7 +4,6 @@ import java.time.Clock;
 import java.time.YearMonth;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import jakarta.validation.Valid;
@@ -33,6 +32,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.kosh.common.BusinessRuleException;
 import com.kosh.common.IndianState;
 import com.kosh.common.NotFoundException;
+import com.kosh.common.Text;
 import com.kosh.statutory.PfPolicy;
 import com.kosh.web.Flash;
 
@@ -160,11 +160,7 @@ class CompanyController {
 	// ------------------------------------------------------------------ views
 
 	private String detailsView(Model model) {
-		Map<String, String> states = new LinkedHashMap<>();
-		for (IndianState state : IndianState.values()) {
-			states.put(state.name(), state.label());
-		}
-		model.addAttribute("states", states);
+		model.addAttribute("states", IndianState.options());
 		model.addAttribute("gaps", service.profile().gaps());
 		model.addAttribute("hasLogo", service.hasLogo());
 		return "admin/company/details";
@@ -194,20 +190,6 @@ class CompanyController {
 			days.put(PaySettings.LAST_DAY, PaySettings.dueDayLabel(PaySettings.LAST_DAY));
 		}
 		return days;
-	}
-
-	/** Blank becomes null; otherwise trimmed with inner runs of spaces made single. */
-	static String text(String value) {
-		if (value == null || value.isBlank()) {
-			return null;
-		}
-		return value.strip().replaceAll("\\s+", " ");
-	}
-
-	/** Registration numbers: spaces removed and upper case, so "abcde 1234 f" is ABCDE1234F. */
-	static String code(String value) {
-		String text = text(value);
-		return (text == null) ? null : text.replace(" ", "").toUpperCase(Locale.ROOT);
 	}
 
 	/** The company details form. JavaBean accessors for binding. */
@@ -297,7 +279,7 @@ class CompanyController {
 		}
 
 		public void setLegalName(String legalName) {
-			this.legalName = text(legalName);
+			this.legalName = Text.clean(legalName);
 		}
 
 		public String getBrandName() {
@@ -305,7 +287,7 @@ class CompanyController {
 		}
 
 		public void setBrandName(String brandName) {
-			this.brandName = text(brandName);
+			this.brandName = Text.clean(brandName);
 		}
 
 		public String getAddressLine1() {
@@ -313,7 +295,7 @@ class CompanyController {
 		}
 
 		public void setAddressLine1(String addressLine1) {
-			this.addressLine1 = text(addressLine1);
+			this.addressLine1 = Text.clean(addressLine1);
 		}
 
 		public String getAddressLine2() {
@@ -321,7 +303,7 @@ class CompanyController {
 		}
 
 		public void setAddressLine2(String addressLine2) {
-			this.addressLine2 = text(addressLine2);
+			this.addressLine2 = Text.clean(addressLine2);
 		}
 
 		public String getCity() {
@@ -329,7 +311,7 @@ class CompanyController {
 		}
 
 		public void setCity(String city) {
-			this.city = text(city);
+			this.city = Text.clean(city);
 		}
 
 		public IndianState getState() {
@@ -345,7 +327,7 @@ class CompanyController {
 		}
 
 		public void setPincode(String pincode) {
-			this.pincode = code(pincode);
+			this.pincode = Text.code(pincode);
 		}
 
 		public String getPan() {
@@ -353,7 +335,7 @@ class CompanyController {
 		}
 
 		public void setPan(String pan) {
-			this.pan = code(pan);
+			this.pan = Text.code(pan);
 		}
 
 		public String getTan() {
@@ -361,7 +343,7 @@ class CompanyController {
 		}
 
 		public void setTan(String tan) {
-			this.tan = code(tan);
+			this.tan = Text.code(tan);
 		}
 
 		public String getPfEstablishmentCode() {
@@ -369,7 +351,7 @@ class CompanyController {
 		}
 
 		public void setPfEstablishmentCode(String pfEstablishmentCode) {
-			this.pfEstablishmentCode = code(pfEstablishmentCode);
+			this.pfEstablishmentCode = Text.code(pfEstablishmentCode);
 		}
 
 		public String getEsiEmployerCode() {
@@ -377,7 +359,7 @@ class CompanyController {
 		}
 
 		public void setEsiEmployerCode(String esiEmployerCode) {
-			this.esiEmployerCode = code(esiEmployerCode);
+			this.esiEmployerCode = Text.code(esiEmployerCode);
 		}
 
 		public String getPtRegistrationNumber() {
@@ -385,7 +367,7 @@ class CompanyController {
 		}
 
 		public void setPtRegistrationNumber(String ptRegistrationNumber) {
-			this.ptRegistrationNumber = code(ptRegistrationNumber);
+			this.ptRegistrationNumber = Text.code(ptRegistrationNumber);
 		}
 
 		public String getSignatoryName() {
@@ -393,7 +375,7 @@ class CompanyController {
 		}
 
 		public void setSignatoryName(String signatoryName) {
-			this.signatoryName = text(signatoryName);
+			this.signatoryName = Text.clean(signatoryName);
 		}
 
 		public String getSignatoryDesignation() {
@@ -401,7 +383,7 @@ class CompanyController {
 		}
 
 		public void setSignatoryDesignation(String signatoryDesignation) {
-			this.signatoryDesignation = text(signatoryDesignation);
+			this.signatoryDesignation = Text.clean(signatoryDesignation);
 		}
 
 	}

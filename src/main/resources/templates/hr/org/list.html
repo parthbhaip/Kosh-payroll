@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title=${kind.plural()}, crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/org}">Organisation</a></li>
+</th:block>
+<th:block th:fragment="content"
+	th:with="departments=${kind.name() == 'DEPARTMENTS'}, locations=${kind.name() == 'LOCATIONS'}">
+	<nav class="tabs" aria-label="Organisation structure">
+		<a class="tab" th:each="tab : ${kinds}" th:href="@{/hr/org/{slug}(slug=${tab.slug()})}"
+			th:attr="aria-current=${tab == kind} ? 'page'">
+			<th:block th:text="${tab.plural()}">Departments</th:block>
+			<span class="tab-count" th:text="${counts.get(tab)}">8</span>
+		</a>
+	</nav>
+
+	<div class="page-toolbar">
+		<p th:text="${kind.intro()}">The teams people belong to, each with an optional head.</p>
+		<a class="btn btn-primary" th:href="@{/hr/org/{slug}/new(slug=${kind.slug()})}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg><th:block th:text="|Add ${kind.noun()}|">Add department</th:block></a>
+	</div>
+
+	<div class="card">
+		<div class="table-wrap" th:unless="${rows.isEmpty()}">
+			<table class="table">
+				<caption class="visually-hidden" th:text="${kind.plural()}">Departments</caption>
+				<thead>
+					<tr>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Code', property='code', sort=${sort})}"></th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Name', property='name', sort=${sort})}"></th>
+						<th scope="col" th:if="${departments}">Head</th>
+						<th scope="col" th:if="${locations}">Place</th>
+						<th scope="col" th:if="${locations}">Professional tax</th>
+						<th scope="col">Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="row : ${rows}">
+						<td class="mono" th:text="${row.code()}">PROD</td>
+						<th scope="row"><a class="cell-title" th:href="@{/hr/org/{slug}/{id}(slug=${kind.slug()}, id=${row.id()})}" th:text="${row.name()}">Production</a></th>
+						<td th:if="${departments}" th:classappend="${row.head() == null} ? 'text-muted'" th:text="${row.head() != null} ? ${row.head()} : 'No head'">Meera Deshpande</td>
+						<td th:if="${locations}" th:text="${row.place()}">Kolhapur, Maharashtra</td>
+						<td th:if="${locations}" th:text="${row.ptApplicable()} ? 'Deducted' : 'Not deducted'">Deducted</td>
+						<td><span th:replace="~{fragments/ui :: badge(status=${row.active()} ? 'ACTIVE' : 'INACTIVE', label=${row.active()} ? 'Active' : 'Inactive')}"></span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<th:block th:if="${rows.isEmpty()}">
+			<div th:replace="~{fragments/ui :: empty(image='documents', title=|No ${#strings.toLowerCase(kind.plural())} yet|, text=${kind.emptyText()}, action=~{::add-action})}"></div>
+		</th:block>
+	</div>
+</th:block>
+<a class="btn btn-primary" th:fragment="add-action" th:href="@{/hr/org/{slug}/new(slug=${kind.slug()})}" th:text="|Add ${kind.noun()}|">Add department</a>
+</body>
+</html>

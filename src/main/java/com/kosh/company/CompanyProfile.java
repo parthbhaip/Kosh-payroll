@@ -15,7 +15,7 @@ public record CompanyProfile(String legalName, String brandName, String addressL
 		IndianState state, String pincode, String pan, String tan, String pfEstablishmentCode, String esiEmployerCode,
 		String ptRegistrationNumber, String signatoryName, String signatoryDesignation) {
 
-	static final String PINCODE_FORMAT = "[1-9][0-9]{5}";
+	public static final String PINCODE_FORMAT = "[1-9][0-9]{5}";
 
 	static final String PAN_FORMAT = "[A-Z]{5}[0-9]{4}[A-Z]";
 
@@ -33,9 +33,9 @@ public record CompanyProfile(String legalName, String brandName, String addressL
 
 	static final int MAX_BRAND_NAME = 80;
 
-	static final int MAX_ADDRESS_LINE = 150;
+	public static final int MAX_ADDRESS_LINE = 150;
 
-	static final int MAX_CITY = 60;
+	public static final int MAX_CITY = 60;
 
 	static final int MAX_SIGNATORY_NAME = 120;
 

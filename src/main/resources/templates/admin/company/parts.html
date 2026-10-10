@@ -9,11 +9,6 @@
 	<a class="tab" th:href="@{/admin/company/pay-settings}" th:attr="aria-current=${current == 'pay'} ? 'page'">Pay settings</a>
 </nav>
 
-<!-- Form-wide errors (a rule that belongs to no single field). Use inside the form's th:object. -->
-<p th:fragment="globalErrors" class="error-text form-error" role="alert" th:if="${#fields.hasGlobalErrors()}">
-	<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.globalErrors(), ' ')}">Enter the legal name, address, PAN and TAN.</span>
-</p>
-
 <!-- Where the record's changes are listed. -->
 <div th:fragment="auditFooter(text)" class="card-footer">
 	<span th:text="${text}">Every change is recorded</span>

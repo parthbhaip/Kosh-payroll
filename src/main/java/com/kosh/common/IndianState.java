@@ -1,5 +1,8 @@
 package com.kosh.common;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Indian states and union territories, in alphabetical order of name. Stored by the two-letter code of ISO 3166-2:IN
  * as revised on 2023-11-23 ({@code MH} for Maharashtra; {@code CG}, {@code TS} and {@code UK} replaced {@code CT},
@@ -23,6 +26,15 @@ public enum IndianState {
 
 	public String label() {
 		return label;
+	}
+
+	/** Code to name, in display order, for a state picker. */
+	public static Map<String, String> options() {
+		Map<String, String> options = new LinkedHashMap<>();
+		for (IndianState state : values()) {
+			options.put(state.name(), state.label);
+		}
+		return options;
 	}
 
 }

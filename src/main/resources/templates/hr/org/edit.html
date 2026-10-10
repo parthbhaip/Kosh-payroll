@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:replace="~{layouts/app :: layout(title=${item != null} ? ${item.name()} : |Add ${kind.noun()}|, crumbs=~{::crumbs}, content=~{::content})}">
+<!-- Add and edit page for every kind of the organisation structure. Model: kind, item (null when adding), form;
+     heads for departments, states for work locations. -->
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/org}">Organisation</a></li>
+	<li><a th:href="@{/hr/org/{slug}(slug=${kind.slug()})}" th:text="${kind.plural()}">Departments</a></li>
+</th:block>
+<div class="detail-layout" th:fragment="content"
+	th:with="editing=${item != null}, departments=${kind.name() == 'DEPARTMENTS'}, locations=${kind.name() == 'LOCATIONS'}">
+	<form class="card" method="post" th:object="${form}" aria-labelledby="form-title" novalidate
+		th:action="${editing} ? @{/hr/org/{slug}/{id}(slug=${kind.slug()}, id=${item.id()})} : @{/hr/org/{slug}(slug=${kind.slug()})}">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="form-title" th:text="|${kind.label()} details|">Department details</h2>
+				<p class="card-subtitle" th:if="${editing}">A new name shows on every record that has this one. Finalized payslips keep the name they were issued with.</p>
+				<p class="card-subtitle" th:unless="${editing}" th:text="${kind.intro()}">The teams people belong to, each with an optional head.</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<p th:replace="~{fragments/form :: globalErrors}"></p>
+			<section class="form-section" aria-labelledby="section-name">
+				<h3 class="form-section-title" id="section-name">Name and code</h3>
+				<div class="form-grid">
+					<div th:replace="~{fragments/form :: input(name='name', label='Name', autocomplete='off')}"></div>
+					<div th:replace="~{fragments/form :: input(name='code', label='Code', autocomplete='off', help=|2 to 10 letters, digits or hyphens, like ${kind.codeExample()}. Used in import files and reports.|)}"></div>
+					<th:block th:if="${departments}">
+						<div th:replace="~{fragments/form :: select(name='headUserId', label='Head', optional=true, options=${heads}, placeholder='No head', help='Anyone with an enabled Kosh account and the Employee role.')}"></div>
+					</th:block>
+				</div>
+			</section>
+
+			<section class="form-section" th:if="${locations}" aria-labelledby="section-address">
+				<h3 class="form-section-title" id="section-address">Address and professional tax</h3>
+				<div class="form-grid">
+					<div th:replace="~{fragments/form :: input(name='addressLine1', label='Address line 1', autocomplete='address-line1', help='Building and street.')}"></div>
+					<div th:replace="~{fragments/form :: input(name='addressLine2', label='Address line 2', optional=true, autocomplete='address-line2', help='Area or landmark.')}"></div>
+					<div th:replace="~{fragments/form :: input(name='city', label='City', autocomplete='address-level2')}"></div>
+					<div th:replace="~{fragments/form :: select(name='state', label='State', options=${states}, placeholder='Choose a state', help='Decides which professional tax slabs apply.')}"></div>
+					<div th:replace="~{fragments/form :: input(name='pincode', label='PIN code', autocomplete='postal-code', help='6 digits.')}"></div>
+					<div class="span-all">
+						<label class="check">
+							<input class="switch" type="checkbox" role="switch" th:field="*{ptApplicable}" aria-describedby="pt-help">
+							<span class="check-text">Deduct professional tax
+								<span class="help" id="pt-help">Turn this off where the state levies no professional tax, such as Delhi. Single employees can still be marked exempt.</span>
+							</span>
+						</label>
+					</div>
+				</div>
+			</section>
+
+			<div class="form-actions">
+				<a class="btn btn-ghost" th:href="@{/hr/org/{slug}(slug=${kind.slug()})}">Cancel</a>
+				<button class="btn btn-primary" type="submit" th:text="${editing} ? 'Save changes' : |Add ${kind.noun()}|">Add department</button>
+			</div>
+		</div>
+	</form>
+
+	<div class="detail-side">
+		<section class="card" th:if="${editing}" aria-labelledby="status-title"
+			th:with="base=@{/hr/org/{slug}/{id}(slug=${kind.slug()}, id=${item.id()})}">
+			<div class="card-header">
+				<h2 class="card-title" id="status-title">Status</h2>
+				<span th:replace="~{fragments/ui :: badge(status=${item.active()} ? 'ACTIVE' : 'INACTIVE', label=${item.active()} ? 'Active' : 'Inactive')}"></span>
+			</div>
+			<div class="card-body">
+				<div class="action-block" th:if="${item.active()}">
+					<p>Deactivate it when it is no longer used. It stays on the records that have it but can’t be chosen for new ones.</p>
+					<form method="post" th:action="${base + '/deactivate'}">
+						<button class="btn btn-secondary btn-sm" type="submit">Deactivate</button>
+					</form>
+				</div>
+				<div class="action-block" th:unless="${item.active()}">
+					<p>Inactive: it stays on the records that have it but can’t be chosen for new ones.</p>
+					<form method="post" th:action="${base + '/activate'}">
+						<button class="btn btn-primary btn-sm" type="submit">Activate</button>
+					</form>
+				</div>
+				<div class="action-block">
+					<p>Delete works only while no employee or other record uses it. Otherwise, deactivate it.</p>
+					<button class="btn btn-danger btn-sm" type="button" commandfor="delete-dialog" command="show-modal"><svg th:replace="~{fragments/icon :: icon('trash')}"></svg><th:block th:text="|Delete ${kind.noun()}|">Delete department</th:block></button>
+				</div>
+			</div>
+			<div class="card-footer">
+				<span>Every change is recorded in the audit log</span>
+				<a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/audit(entity=${kind.label()}, entityId=${item.id()})}">View in audit log</a>
+			</div>
+			<!-- Asks first: a misclick must not remove the item. Cancel comes first, so it gets the focus. -->
+			<dialog class="modal" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-text">
+				<div class="dialog-header">
+					<h2 id="delete-title" th:text="|Delete ${item.name()}?|">Delete Production?</h2>
+				</div>
+				<div class="dialog-body">
+					<p id="delete-text" th:text="|It is removed from the ${#strings.toLowerCase(kind.plural())} list. This can’t be undone.|">It is removed from the departments list. This can’t be undone.</p>
+				</div>
+				<div class="dialog-footer">
+					<form method="dialog">
+						<button class="btn btn-secondary" type="submit">Cancel</button>
+					</form>
+					<form method="post" th:action="${base + '/delete'}">
+						<button class="btn btn-danger" type="submit" th:text="|Delete ${kind.noun()}|">Delete department</button>
+					</form>
+				</div>
+			</dialog>
+		</section>
+
+		<section class="card" aria-labelledby="about-title">
+			<div class="card-header">
+				<h2 class="card-title" id="about-title" th:text="|About ${#strings.toLowerCase(kind.plural())}|">About departments</h2>
+			</div>
+			<div class="card-body">
+				<p class="text-secondary" th:text="${kind.usage()}">Every employee belongs to one department.</p>
+			</div>
+		</section>
+	</div>
+</div>
+</body>
+</html>
