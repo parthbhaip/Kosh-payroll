@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:replace="~{layouts/app :: layout(title=${item != null} ? ${item.details().name()} : 'Add holiday', crumbs=~{::crumbs}, content=~{::content})}">
+<!-- Add and edit a holiday. Model: location (HolidayService.LocationRef), item (null when adding), year (the list to
+     go back to), form, types and, for a copied date not yet confirmed, checkNotice (a Flash). -->
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/holidays(location=${location.id()}, year=${year})}">Holidays</a></li>
+</th:block>
+<div class="detail-layout" th:fragment="content" th:with="editing=${item != null}">
+	<form class="card" method="post" th:object="${form}" aria-labelledby="form-title" novalidate
+		th:action="${editing} ? @{/hr/holidays/{id}(id=${item.id()})} : @{/hr/holidays}">
+		<input type="hidden" name="location" th:unless="${editing}" th:value="${location.id()}">
+		<input type="hidden" name="year" th:unless="${editing}" th:value="${year}">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="form-title">Holiday details</h2>
+				<p class="card-subtitle" th:text="|At ${location.name()}|">At Shiroli factory</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<p th:replace="~{fragments/form :: globalErrors}"></p>
+			<div class="form-notice" th:if="${checkNotice != null}">
+				<div th:replace="~{fragments/ui :: flash(${checkNotice})}"></div>
+			</div>
+			<div class="form-grid">
+				<div th:replace="~{fragments/form :: input(name='date', label='Date', type='date')}"></div>
+				<div th:replace="~{fragments/form :: input(name='name', label='Name', autocomplete='off', help='As people know it, like Ganesh Chaturthi.')}"></div>
+				<fieldset class="fieldset span-all" th:with="invalid=${#fields.hasErrors('type')}"
+					th:attr="aria-describedby=${invalid} ? 'type-error'">
+					<legend>Type</legend>
+					<label class="check" th:each="type : ${types}">
+						<input class="radio" type="radio" th:field="*{type}" th:value="${type.name()}"
+							th:attr="aria-describedby=${'type-help-' + type.name()}">
+						<span class="check-text"><th:block th:text="${type.label()}">National</th:block>
+							<span class="help" th:id="${'type-help-' + type.name()}" th:text="${type.description()}">Closed, like Republic Day or Independence Day.</span>
+						</span>
+					</label>
+					<p class="error-text" id="type-error" th:if="${invalid}">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('type'), ' ')}">Choose the type.</span>
+					</p>
+				</fieldset>
+			</div>
+
+			<div class="form-actions">
+				<a class="btn btn-ghost" th:href="@{/hr/holidays(location=${location.id()}, year=${year})}">Cancel</a>
+				<button class="btn btn-primary" type="submit" th:text="${editing} ? 'Save holiday' : 'Add holiday'">Add holiday</button>
+			</div>
+		</div>
+	</form>
+
+	<div class="detail-side">
+		<section class="card" th:if="${editing}" aria-labelledby="delete-block-title">
+			<div class="card-header">
+				<h2 class="card-title" id="delete-block-title">Remove</h2>
+			</div>
+			<div class="card-body">
+				<div class="action-block">
+					<p>Delete a holiday that was added by mistake or isn’t given this year. Finalized payslips are not affected. Working days in months not yet finalized are counted again without it.</p>
+					<button class="btn btn-danger btn-sm" type="button" commandfor="delete-dialog" command="show-modal"><svg th:replace="~{fragments/icon :: icon('trash')}"></svg>Delete holiday</button>
+				</div>
+			</div>
+			<div class="card-footer">
+				<span>Every change is recorded in the audit log</span>
+				<a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/audit(entity='Holiday', entityId=${item.id()})}">View in audit log</a>
+			</div>
+			<!-- Asks first: a misclick must not remove the holiday. Cancel comes first, so it gets the focus. -->
+			<dialog class="modal" id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-text">
+				<div class="dialog-header">
+					<h2 id="delete-title" th:text="|Delete ${item.details().name()}?|">Delete Diwali?</h2>
+				</div>
+				<div class="dialog-body">
+					<p id="delete-text" th:text="|It is removed from the ${item.details().date().year} holidays at ${location.name()}. This can’t be undone.|">It is removed from the 2026 holidays at Shiroli factory. This can’t be undone.</p>
+				</div>
+				<div class="dialog-footer">
+					<form method="dialog">
+						<button class="btn btn-secondary" type="submit">Cancel</button>
+					</form>
+					<form method="post" th:action="@{/hr/holidays/{id}/delete(id=${item.id()})}">
+						<button class="btn btn-danger" type="submit">Delete holiday</button>
+					</form>
+				</div>
+			</dialog>
+		</section>
+
+		<section class="card" aria-labelledby="about-title">
+			<div class="card-header">
+				<h2 class="card-title" id="about-title">How holidays count</h2>
+			</div>
+			<div class="card-body">
+				<p class="text-secondary">National and festival holidays are paid days off. Leave, attendance and working-day proration skip them, like weekly offs.</p>
+				<p class="text-secondary">An optional holiday is a working day. Someone who takes it off records it as leave.</p>
+			</div>
+		</section>
+	</div>
+</div>
+</body>
+</html>

@@ -27,7 +27,12 @@ public enum AuditAction {
 	ORG_ITEM_CHANGED("Organisation item changed", null),
 	ORG_ITEM_DEACTIVATED("Organisation item deactivated", "warning"),
 	ORG_ITEM_ACTIVATED("Organisation item activated", "success"),
-	ORG_ITEM_DELETED("Organisation item deleted", "danger");
+	ORG_ITEM_DELETED("Organisation item deleted", "danger"),
+	HOLIDAY_ADDED("Holiday added", "info"),
+	HOLIDAY_CHANGED("Holiday changed", null),
+	HOLIDAY_DELETED("Holiday deleted", "danger"),
+	HOLIDAYS_COPIED("Holidays copied", "info"),
+	WORK_WEEK_CHANGED("Work week changed", "info");
 
 	private final String label;
 

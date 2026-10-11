@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Holidays', crumbs=~{::crumbs}, content=~{::content})}">
+<!-- One work location's holidays for a calendar year, with its work week. Model: year; when a location exists also
+     view (HolidayService.YearView), locationOptions, years and optionally checkNotice (a Flash). -->
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/hr}">HR</a></li></th:block>
+<th:block th:fragment="content">
+	<th:block th:if="${view == null}">
+		<div class="page-toolbar">
+			<p>Holidays and weekly offs for each work location. Leave, attendance and working-day proration count only the days a location is open.</p>
+		</div>
+		<div class="card">
+			<div th:replace="~{fragments/ui :: empty(image='documents', title='No work locations yet', text='Holiday calendars belong to a work location. Add your factory or office first.', action=~{::add-location})}"></div>
+		</div>
+	</th:block>
+
+	<th:block th:if="${view != null}" th:with="location=${view.location()}">
+		<div class="page-toolbar">
+			<p>Holidays and weekly offs for each work location. Leave, attendance and working-day proration count only the days a location is open.</p>
+			<div class="cluster">
+				<form method="post" th:action="@{/hr/holidays/copy}" th:if="${view.previousYearCount() > 0 and !view.holidays().isEmpty()}">
+					<input type="hidden" name="location" th:value="${location.id()}">
+					<input type="hidden" name="year" th:value="${year}">
+					<button class="btn btn-secondary" type="submit" th:text="|Copy ${year - 1}’s holidays|">Copy 2025’s holidays</button>
+				</form>
+				<a class="btn btn-primary" th:href="@{/hr/holidays/new(location=${location.id()}, year=${year})}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add holiday</a>
+			</div>
+		</div>
+
+		<div class="detail-layout">
+			<div class="card">
+				<form class="filter-bar" method="get" th:action="@{/hr/holidays}" aria-label="Choose a location and year">
+					<div class="field">
+						<label class="label" for="holiday-location">Location</label>
+						<select class="select" id="holiday-location" name="location">
+							<option th:each="option : ${locationOptions}" th:value="${option.key}" th:text="${option.value}"
+								th:selected="${option.key == location.id()}">Shiroli factory</option>
+						</select>
+					</div>
+					<div class="field">
+						<label class="label" for="holiday-year">Year</label>
+						<select class="select" id="holiday-year" name="year">
+							<option th:each="option : ${years}" th:value="${option}" th:text="${option}"
+								th:selected="${option == year}">2026</option>
+						</select>
+					</div>
+					<div class="filter-actions">
+						<button class="btn btn-secondary" type="submit">Show</button>
+					</div>
+				</form>
+
+				<div class="card-header">
+					<div>
+						<h2 class="card-title" id="holidays-title" th:text="|${year} at ${location.name()}|">2026 at Shiroli factory</h2>
+						<p class="card-subtitle" th:text="${view.summary()}">12 holidays and 2 optional · 289 working days</p>
+					</div>
+				</div>
+
+				<div class="card-body" th:if="${checkNotice != null}">
+					<div th:replace="~{fragments/ui :: flash(${checkNotice})}"></div>
+				</div>
+
+				<div class="table-wrap" th:unless="${view.holidays().isEmpty()}">
+					<table class="table">
+						<caption class="visually-hidden" th:text="|Holidays in ${year} at ${location.name()}, by date|">Holidays in 2026 at Shiroli factory, by date</caption>
+						<thead>
+							<tr>
+								<th scope="col">Date</th>
+								<th scope="col">Holiday</th>
+								<th scope="col">Type</th>
+								<th scope="col">Notes</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="row : ${view.holidays()}">
+								<td>
+									<time class="cell-title" th:datetime="${row.date()}" th:text="${@fmt.date(row.date())}">26 Jan 2026</time>
+									<span class="cell-sub" th:text="${row.weekday()}">Monday</span>
+								</td>
+								<th scope="row"><a class="cell-title" th:href="@{/hr/holidays/{id}(id=${row.id()})}" th:text="${row.name()}">Republic Day</a></th>
+								<td><span class="badge" th:attr="data-status=${row.type()}" th:text="${row.type().label()}">National</span></td>
+								<td>
+									<span class="badge" data-status="TO_CHECK" th:if="${row.dateToCheck()}">Check date</span>
+									<span class="text-muted" th:if="${row.onWeeklyOff() and !row.dateToCheck()}">On a weekly off</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<th:block th:if="${view.holidays().isEmpty()}">
+					<div th:replace="~{fragments/ui :: empty(image='inbox', title=|No holidays for ${year} yet|, text=${view.previousYearCount() > 0} ? |Copy ${year - 1}’s list and check the festival dates, or add holidays one by one.| : 'Add the national and festival holidays people at this location get off.', action=~{::empty-actions})}"></div>
+				</th:block>
+			</div>
+
+			<div class="detail-side">
+				<section class="card" aria-labelledby="week-title">
+					<div class="card-header">
+						<div>
+							<h2 class="card-title" id="week-title">Work week</h2>
+							<p class="card-subtitle" th:text="${view.weeklyOffs().describe()}">Off every Sunday and the 2nd and 4th Saturday</p>
+						</div>
+					</div>
+					<div class="card-body">
+						<dl th:replace="~{fragments/ui :: dl(${view.week()})}"></dl>
+					</div>
+					<div class="card-footer">
+						<span>The 2nd Saturday is the second one in the month</span>
+						<a th:href="@{/hr/holidays/work-week/{id}(id=${location.id()}, year=${year})}">Change work week</a>
+					</div>
+				</section>
+			</div>
+		</div>
+	</th:block>
+</th:block>
+<a class="btn btn-primary" th:fragment="add-location" th:href="@{/hr/org/locations/new}">Add work location</a>
+<th:block th:fragment="empty-actions">
+	<form method="post" th:action="@{/hr/holidays/copy}" th:if="${view.previousYearCount() > 0}">
+		<input type="hidden" name="location" th:value="${view.location().id()}">
+		<input type="hidden" name="year" th:value="${year}">
+		<button class="btn btn-primary" type="submit" th:text="|Copy ${year - 1}’s ${view.previousYearCount() == 1 ? 'holiday' : view.previousYearCount() + ' holidays'}|">Copy 2025’s 14 holidays</button>
+	</form>
+	<a class="btn" th:classappend="${view.previousYearCount() > 0} ? 'btn-secondary' : 'btn-primary'"
+		th:href="@{/hr/holidays/new(location=${view.location().id()}, year=${year})}">Add holiday</a>
+</th:block>
+</body>
+</html>

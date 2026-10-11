@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Work week', crumbs=~{::crumbs}, content=~{::content})}">
+<!-- A work location's weekly offs as a grid of days by weeks of the month. Model: location
+     (HolidayService.LocationRef), current (the saved WeeklyOffs), year (the list to go back to), days, weeks (1 to 5 with their labels), form (ticked boxes as SATURDAY:2). -->
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/holidays(location=${location.id()}, year=${year})}">Holidays</a></li>
+</th:block>
+<div class="detail-layout" th:fragment="content">
+	<form class="card" method="post" th:object="${form}" th:action="@{/hr/holidays/work-week/{id}(id=${location.id()})}"
+		aria-labelledby="form-title" novalidate>
+		<input type="hidden" name="year" th:value="${year}">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="form-title" th:text="|Weekly offs at ${location.name()}|">Weekly offs at Shiroli factory</h2>
+				<p class="card-subtitle">Tick the weeks of the month each day is off. Tick all five for a day that is off every week.</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<p th:replace="~{fragments/form :: globalErrors}"></p>
+			<p class="error-text form-error" id="off-error" role="alert" th:if="${#fields.hasErrors('off')}">
+				<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('off'), ' ')}">Leave at least one working day in every week of the month.</span>
+			</p>
+			<div class="table-wrap">
+				<table class="table week-grid" th:attr="aria-describedby=${#fields.hasErrors('off')} ? 'off-error'">
+					<caption class="visually-hidden">Weekly offs by week of the month</caption>
+					<thead>
+						<tr>
+							<th scope="col">Day</th>
+							<th scope="col" th:each="week : ${weeks}" th:text="${week.value}">1st</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="day : ${days}" th:with="dayName=${#strings.capitalize(#strings.toLowerCase(day.name()))}">
+							<th scope="row" th:text="${dayName}">Saturday</th>
+							<td th:each="week : ${weeks}">
+								<label class="week-check">
+									<input class="checkbox" type="checkbox" name="off" th:value="${day.name() + ':' + week.key}"
+										th:checked="${form.isOff(day, week.key)}">
+									<span class="visually-hidden" th:text="|${week.value} ${dayName} off|">2nd Saturday off</span>
+								</label>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="form-actions">
+				<a class="btn btn-ghost" th:href="@{/hr/holidays(location=${location.id()}, year=${year})}">Cancel</a>
+				<button class="btn btn-primary" type="submit">Save work week</button>
+			</div>
+		</div>
+	</form>
+
+	<div class="detail-side">
+		<section class="card" aria-labelledby="now-title">
+			<div class="card-header">
+				<div>
+					<h2 class="card-title" id="now-title">Saved work week</h2>
+					<p class="card-subtitle" th:text="${current.describe()}">Off every Sunday</p>
+				</div>
+			</div>
+			<div class="card-body">
+				<p class="text-secondary">Weeks are counted inside the calendar month: the 2nd Saturday is always between the 8th and the 14th, and a 5th one falls on the 29th to the 31st.</p>
+				<p class="text-secondary">Leave, attendance and working-day proration skip weekly offs. A new location starts with Sunday off.</p>
+			</div>
+		</section>
+	</div>
+</div>
+</body>
+</html>

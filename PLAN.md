@@ -76,7 +76,7 @@ How this file works
 - [x] T12 Organisation structure
   - CRUD for departments (with head), designations, grades, cost centres, work locations (name, address, state code, PT applicable). Cannot delete when in use (deactivate instead). Seed nothing yet (T20 does). Tests.
 
-- [ ] T13 Holiday calendar and work week
+- [x] T13 Holiday calendar and work week
   - Per-location holiday list for each calendar year (national, festival, optional), work week pattern (e.g. Mon-Sat with 2nd/4th Saturday off), copy last year's list. Service answers "is working day?" and "working days between". Unit tests incl. 2nd/4th Saturday rule.
 
 - [ ] T14 Statutory rule tables

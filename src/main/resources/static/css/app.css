@@ -765,6 +765,7 @@ kbd,
 }
 
 .badge-info,
+.badge[data-status="NATIONAL"],
 .badge[data-status="INPUTS_LOCKED"],
 .badge[data-status="CALCULATED"],
 .badge[data-status="INVITED"] {
@@ -773,6 +774,7 @@ kbd,
 }
 
 .badge-accent,
+.badge[data-status="FESTIVAL"],
 .badge[data-status="APPROVED"] {
 	--badge-fg: var(--color-accent);
 	--badge-bg: var(--color-accent-tint);
@@ -787,6 +789,7 @@ kbd,
 }
 
 .badge-warning,
+.badge[data-status="TO_CHECK"],
 .badge[data-status="SUBMITTED"],
 .badge[data-status="REOPENED"],
 .badge[data-status="ON_NOTICE"],
@@ -3106,6 +3109,11 @@ a.page-link:not([aria-current]):hover {
 	gap: var(--space-6);
 }
 
+/* A side card is narrow: labels take their own width and values the rest, not a 200px label column. */
+.detail-side .dl {
+	grid-template-columns: auto minmax(0, 1fr);
+}
+
 .action-block + .action-block {
 	padding-top: var(--space-4);
 	border-top: 1px solid var(--color-divider);
@@ -3324,4 +3332,29 @@ a.page-link:not([aria-current]):hover {
 .checklist-text {
 	font-size: var(--text-sm);
 	color: var(--color-text-secondary);
+}
+
+/* ---------------------------------------------------------------- Holidays and work week (hr/holidays) */
+/* A notice at the top of a form, above its fields. */
+.form-notice {
+	margin-bottom: var(--space-5);
+}
+
+/* Days by weeks of the month, one checkbox per cell; the whole cell is the click target. */
+.week-grid td {
+	padding: 0;
+	text-align: center;
+}
+
+/* Relative, so the hidden label text stays inside the table's scroll box on phones instead of widening the page. */
+.week-check {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	padding: var(--space-3) var(--space-4);
+	cursor: pointer;
+}
+
+.week-check .checkbox {
+	margin: 0;
 }
