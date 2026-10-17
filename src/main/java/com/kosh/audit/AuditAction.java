@@ -32,7 +32,10 @@ public enum AuditAction {
 	HOLIDAY_CHANGED("Holiday changed", null),
 	HOLIDAY_DELETED("Holiday deleted", "danger"),
 	HOLIDAYS_COPIED("Holidays copied", "info"),
-	WORK_WEEK_CHANGED("Work week changed", "info");
+	WORK_WEEK_CHANGED("Work week changed", "info"),
+	STATUTORY_VERSION_ADDED("Statutory rule version added", "warning"),
+	STATUTORY_RULES_CHECKED("Statutory rules checked", null),
+	STATUTORY_VERSION_WITHDRAWN("Statutory rule version withdrawn", "danger");
 
 	private final String label;
 

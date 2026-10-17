@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Statutory rules', crumbs=~{::crumbs}, content=~{::content})}">
+<!-- The statutory rules in force today, one card per family (StatutoryRuleService.FamilyView), with values, slabs,
+     source note and last-verified date. Model: families, today, checkNotice (a Flash). -->
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/admin}">Admin</a></li></th:block>
+<th:block th:fragment="content">
+	<div class="page-toolbar">
+		<p>Rates, ceilings and slabs that payroll applies, each in force from a date. A version is never edited: new values start on the 1st of a month, and the version before them ends the day before.</p>
+		<a class="btn btn-secondary" th:href="@{/admin/audit(entity='Statutory rule')}"><svg th:replace="~{fragments/icon :: icon('file-text')}"></svg>Changes in the audit log</a>
+	</div>
+
+	<div th:replace="~{fragments/ui :: flash(${checkNotice})}"></div>
+
+	<nav class="rule-index" aria-label="Rule families">
+		<a class="chip" th:each="family : ${families}" th:href="|#${family.anchor()}|" th:text="${family.current().title()}">Provident Fund</a>
+	</nav>
+
+	<section class="card rule-card" th:each="family : ${families}" th:id="${family.anchor()}"
+		th:with="info=${family.current()}, titleId=${family.anchor() + '-title'}" th:attr="aria-labelledby=${titleId}">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" th:id="${titleId}" th:text="${info.title()}">Provident Fund</h2>
+				<p class="card-subtitle" th:text="${info.family().summary()}">Employee and employer shares, pension (EPS), EDLI and admin charges.</p>
+			</div>
+			<span class="badge badge-success" th:if="${family.inForce()}">In force</span>
+			<span class="badge badge-info" th:unless="${family.inForce()}" th:text="|Starts ${@fmt.date(info.effectiveFrom())}|">Starts 1 Apr 2026</span>
+		</div>
+
+		<div class="card-body stack">
+			<div class="flash flash-info" role="status" th:if="${family.next() != null}">
+				<svg th:replace="~{fragments/icon :: icon('info')}"></svg>
+				<div>
+					<p class="flash-title" th:text="|New values from ${@fmt.date(family.next().effectiveFrom())}|">New values from 1 Apr 2027</p>
+					<p class="flash-text" th:text="|Changes: ${#strings.listJoin(family.nextChanges(), ', ')}.|">Changes: Wage ceiling.</p>
+					<button class="btn btn-secondary btn-sm rule-withdraw" type="button" th:if="${family.withdrawable() != null}"
+						th:attr="commandfor=${family.anchor() + '-withdraw'}" command="show-modal"><th:block th:text="|Withdraw the version from ${@fmt.date(family.withdrawable().effectiveFrom())}|">Withdraw the version from 1 Apr 2027</th:block><span class="visually-hidden" th:text="|: ${info.title()}|">: Provident Fund</span></button>
+				</div>
+			</div>
+
+			<!-- Asks first: a withdrawn version is deleted. Cancel comes first, so it gets the focus. -->
+			<dialog class="modal" th:if="${family.withdrawable() != null}"
+				th:with="withdrawn=${family.withdrawable()}, dialogId=${family.anchor() + '-withdraw'}, from=${@fmt.date(family.withdrawable().effectiveFrom())}"
+				th:id="${dialogId}" th:attr="aria-labelledby=${dialogId + '-title'}, aria-describedby=${dialogId + '-text'}">
+				<div class="dialog-header">
+					<h2 th:id="${dialogId + '-title'}" th:text="|Withdraw the version from ${from}?|">Withdraw the version from 1 Apr 2027?</h2>
+				</div>
+				<div class="dialog-body">
+					<p th:id="${dialogId + '-text'}" th:text="|The ${withdrawn.title()} values from ${from} are deleted before they start, and the version before them applies again with no end date. This can’t be undone.|">The Provident Fund values from 1 Apr 2027 are deleted before they start, and the version before them applies again with no end date. This can’t be undone.</p>
+				</div>
+				<div class="dialog-footer">
+					<form method="dialog">
+						<button class="btn btn-secondary" type="submit">Cancel</button>
+					</form>
+					<form method="post"
+						th:action="${info.state() == null} ? @{/admin/statutory/{slug}/withdraw(slug=${info.family().slug()})} : @{/admin/statutory/{slug}/withdraw(slug=${info.family().slug()}, state=${info.state().name()})}">
+						<input type="hidden" name="version" th:value="${withdrawn.id()}">
+						<button class="btn btn-danger" type="submit">Withdraw version</button>
+					</form>
+				</div>
+			</dialog>
+
+			<div class="rule-body">
+				<dl class="dl rule-values">
+					<th:block th:each="line : ${family.lines()}">
+						<dt th:text="${line.label()}">Wage ceiling</dt>
+						<dd>
+							<span class="rule-value" th:text="${line.value()}">₹15,000.00</span>
+							<span class="rule-help" th:if="${line.help() != null}" th:text="${line.help()}">PF wages above this are not counted.</span>
+						</dd>
+					</th:block>
+				</dl>
+
+				<aside class="rule-source" th:attr="aria-labelledby=${family.anchor() + '-source'}">
+					<h3 class="rule-source-title" th:id="${family.anchor() + '-source'}">Source</h3>
+					<p class="rule-source-note" th:text="${info.sourceNote()}">Wage ceiling of 15,000 rupees a month.</p>
+					<dl class="dl">
+						<dt th:text="${family.inForce()} ? 'In force since' : 'Starts on'">In force since</dt>
+						<dd th:text="${@fmt.date(info.effectiveFrom())}">1 Apr 2026</dd>
+						<dt>Ends</dt>
+						<dd th:text="${info.effectiveTo() != null} ? ${@fmt.date(info.effectiveTo())} : 'No end date'">No end date</dd>
+						<dt>Last verified</dt>
+						<dd th:text="${@fmt.date(info.verifiedOn())}">5 Oct 2026</dd>
+					</dl>
+				</aside>
+			</div>
+		</div>
+
+		<div class="table-wrap rule-table" th:each="table : ${family.tables()}">
+			<table class="table">
+				<caption th:text="${table.title()}">Slabs</caption>
+				<thead>
+					<tr>
+						<th scope="col" th:each="header, col : ${table.headers()}" th:class="${col.index >= table.textColumns()} ? 'num'"
+							th:text="${header}">Total income</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="row : ${table.rows()}">
+						<th:block th:each="cell, col : ${row}">
+							<th scope="row" th:if="${col.first}" th:class="${col.index >= table.textColumns()} ? 'num'" th:text="${cell}">Up to ₹4,00,000.00</th>
+							<td th:unless="${col.first}" th:class="${col.index >= table.textColumns()} ? 'num'" th:text="${cell}">5%</td>
+						</th:block>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="card-footer">
+			<span th:text="${family.earlierVersions() == 0} ? 'First version in Kosh' : |${family.earlierVersions()} earlier ${family.earlierVersions() == 1 ? 'version' : 'versions'}|">First version in Kosh</span>
+			<div class="cluster">
+				<span class="rule-checked" th:if="${family.inForce() and info.verifiedOn() == today}"><svg th:replace="~{fragments/icon :: icon('check')}"></svg>Checked today</span>
+				<form method="post" th:if="${family.inForce() and info.verifiedOn() != today}"
+					th:action="${info.state() == null} ? @{/admin/statutory/{slug}/checked(slug=${info.family().slug()})} : @{/admin/statutory/{slug}/checked(slug=${info.family().slug()}, state=${info.state().name()})}">
+					<button class="btn btn-ghost btn-sm" type="submit"><svg th:replace="~{fragments/icon :: icon('check')}"></svg>Mark as checked<span class="visually-hidden" th:text="|: ${info.title()}|">: Provident Fund</span></button>
+				</form>
+				<a class="btn btn-secondary btn-sm"
+					th:href="${info.state() == null} ? @{/admin/statutory/{slug}/new(slug=${info.family().slug()})} : @{/admin/statutory/{slug}/new(slug=${info.family().slug()}, state=${info.state().name()})}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add new version<span class="visually-hidden" th:text="|: ${info.title()}|">: Provident Fund</span></a>
+			</div>
+		</div>
+	</section>
+</th:block>
+</body>
+</html>

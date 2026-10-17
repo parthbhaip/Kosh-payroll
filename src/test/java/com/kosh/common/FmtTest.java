@@ -40,6 +40,14 @@ class FmtTest {
 	}
 
 	@ParameterizedTest
+	@CsvSource(delimiter = '|', value = { "12.0000 | 12%", "8.3300 | 8.33%", "0.7500 | 0.75%", "0.0000 | 0%",
+			"100 | 100%", "50.0000 | 50%" })
+	void percentDropsTrailingZeros(String rate, String shown) {
+		assertThat(fmt.percent(new BigDecimal(rate))).isEqualTo(shown);
+		assertThat(fmt.percent(null)).isEqualTo("—");
+	}
+
+	@ParameterizedTest
 	@CsvSource(delimiter = '|', value = {
 			"0           | ₹0",
 			"45000.40    | ₹45,000",

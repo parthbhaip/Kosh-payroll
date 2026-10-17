@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title=|New version: ${latest.title()}|, crumbs=~{::crumbs}, content=~{::content})}">
+<!-- A new version of one rule family, prefilled from the latest one. Model: family (RuleFamily), latest (VersionInfo),
+     fields (RuleField list), form (StatutoryRuleController.VersionForm), genders, periodOptions, action, anchor,
+     dateHelp. -->
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/admin}">Admin</a></li>
+	<li><a th:href="@{/admin/statutory}">Statutory rules</a></li>
+</th:block>
+<div class="detail-layout" th:fragment="content">
+	<form class="card" method="post" th:action="${action}" th:object="${form}" aria-labelledby="form-title" novalidate>
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="form-title">New values</h2>
+				<p class="card-subtitle" th:text="|Filled in from the version from ${@fmt.date(latest.effectiveFrom())}. Change what the new rules change.|">Filled in from the version from 1 Apr 2026.</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<p th:replace="~{fragments/form :: globalErrors}"></p>
+
+			<section class="form-section" aria-labelledby="section-date">
+				<h3 class="form-section-title" id="section-date">When the new values apply</h3>
+				<div class="form-grid">
+					<div th:replace="~{fragments/form :: input(name='effectiveFrom', label='In force from', type='date', help=${dateHelp})}"></div>
+				</div>
+			</section>
+
+			<section class="form-section" aria-labelledby="section-values">
+				<h3 class="form-section-title" id="section-values" th:text="${family.label()}">Provident Fund</h3>
+				<div class="form-grid">
+					<div class="field" th:each="field : ${fields}"
+						th:with="name=${'values[' + field.key() + ']'}, id=${'value-' + field.key()}, invalid=${#fields.hasErrors(name)}, kind=${field.kind().name()},
+							describedBy=${#strings.trim((kind == 'HALF_YEARS' ? '' : id + '-unit ') + (field.help() != null ? id + '-help ' : '') + (invalid ? id + '-error' : ''))}">
+						<label class="label" th:for="${id}" th:text="${field.label()}">Wage ceiling</label>
+						<select class="select" th:if="${kind == 'HALF_YEARS'}" th:id="${id}" th:name="${name}"
+							th:attr="aria-describedby=${describedBy.isEmpty()} ? null : ${describedBy}, aria-invalid=${invalid} ? 'true' : null">
+							<option th:each="option : ${periodOptions}" th:value="${option.key}" th:text="${option.value}"
+								th:selected="${#strings.toString(option.key) == form.values.get(field.key())}">April and October</option>
+						</select>
+						<div class="input-group" th:unless="${kind == 'HALF_YEARS'}" th:classappend="${kind != 'MONEY'} ? 'input-group-end'">
+							<span class="input-addon" th:if="${kind == 'MONEY'}" th:id="${id + '-unit'}" title="Rupees">₹</span>
+							<input class="input" type="text" inputmode="decimal" autocomplete="off" th:id="${id}" th:name="${name}"
+								th:value="${form.values.get(field.key())}"
+								th:attr="aria-describedby=${describedBy}, aria-invalid=${invalid} ? 'true' : null">
+							<span class="input-addon" th:unless="${kind == 'MONEY'}" th:id="${id + '-unit'}"
+								th:text="${kind == 'RATE'} ? '%' : ${field.unit()}">%</span>
+						</div>
+						<p class="help" th:if="${field.help() != null}" th:id="${id + '-help'}" th:text="${field.help()}">PF wages above this are not counted.</p>
+						<p class="error-text" th:if="${invalid}" th:id="${id + '-error'}">
+							<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors(name), ' ')}">Enter an amount in rupees.</span>
+						</p>
+					</div>
+				</div>
+			</section>
+
+			<section class="form-section" th:if="${family.hasPtSlabs()}" aria-labelledby="section-pt" th:with="invalid=${#fields.hasErrors('ptSlabs*')}">
+				<h3 class="form-section-title" id="section-pt">Slabs</h3>
+				<p class="form-section-text">A slab covers gross salary of the month above the slab before it, up to its limit. Leave “Up to” empty on the top slab for each gender. Empty rows are ignored.</p>
+				<div class="table-wrap slab-editor">
+					<table class="table">
+						<caption class="visually-hidden">Professional tax slabs</caption>
+						<thead>
+							<tr>
+								<th scope="col">Gender</th>
+								<th scope="col" class="num">Up to (₹)</th>
+								<th scope="col" class="num">Monthly PT (₹)</th>
+								<th scope="col" class="num">In February (₹)</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="row, it : *{ptSlabs}" th:with="at=|ptSlabs[${it.index}].|, id=|pt-${it.index}-|">
+								<td>
+									<label class="visually-hidden" th:for="${id + 'gender'}" th:text="|Row ${it.count} gender|">Row 1 gender</label>
+									<select class="select" th:id="${id + 'gender'}" th:name="${at + 'gender'}"
+										th:attr="aria-invalid=${#fields.hasErrors(at + 'gender')} ? 'true' : null, aria-describedby=${invalid} ? 'pt-errors' : null">
+										<option value="">Choose</option>
+										<option th:each="gender : ${genders}" th:value="${gender.name()}" th:text="${gender.label()}"
+											th:selected="${gender.name() == row.gender}">Male</option>
+									</select>
+								</td>
+								<td th:each="cell : ${ {'upTo', 'monthly', 'february'} }">
+									<label class="visually-hidden" th:for="${id + cell}"
+										th:text="|Row ${it.count} ${cell == 'upTo' ? 'up to' : (cell == 'monthly' ? 'monthly PT' : 'February PT')}|">Row 1 up to</label>
+									<input class="input num" type="text" inputmode="decimal" autocomplete="off" th:id="${id + cell}" th:name="${at + cell}"
+										th:value="${cell == 'upTo'} ? ${row.upTo} : (${cell == 'monthly'} ? ${row.monthly} : ${row.february})"
+										th:attr="aria-invalid=${#fields.hasErrors(at + cell)} ? 'true' : null, aria-describedby=${invalid} ? 'pt-errors' : null">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<ul class="slab-errors" id="pt-errors" th:if="${invalid}">
+					<li class="error-text" th:each="message : ${#fields.errors('ptSlabs*')}">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${message}">Row 1: choose a gender.</span>
+					</li>
+				</ul>
+			</section>
+
+			<th:block th:if="${family.hasTaxSlabs()}">
+				<section class="form-section" th:each="list : ${ {'taxSlabs', 'surcharges'} }"
+					th:with="slabs=${list == 'taxSlabs'}, invalid=${#fields.hasErrors(list + '*')}, sectionId=${'section-' + list}"
+					th:attr="aria-labelledby=${sectionId}">
+					<h3 class="form-section-title" th:id="${sectionId}" th:text="${slabs} ? 'Slabs' : 'Surcharges'">Slabs</h3>
+					<p class="form-section-text" th:text="${slabs} ? 'A slab taxes total income above the slab before it, up to its limit. Leave “Income up to” empty on the top slab. Empty rows are ignored.' : 'A surcharge is a share of the tax once total income is above the amount; the highest one crossed applies. Empty rows are ignored.'">A slab taxes total income above the slab before it.</p>
+					<div class="table-wrap slab-editor">
+						<table class="table">
+							<caption class="visually-hidden" th:text="${slabs} ? 'Income-tax slabs' : 'Surcharges'">Income-tax slabs</caption>
+							<thead>
+								<tr>
+									<th scope="col" class="num" th:text="${slabs} ? 'Income up to (₹)' : 'Income above (₹)'">Income up to (₹)</th>
+									<th scope="col" class="num" th:text="${slabs} ? 'Tax rate (%)' : 'Surcharge on tax (%)'">Tax rate (%)</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="row, it : ${slabs} ? *{taxSlabs} : *{surcharges}" th:with="at=|${list}[${it.index}].|, id=|${list}-${it.index}-|">
+									<td>
+										<label class="visually-hidden" th:for="${id + 'amount'}" th:text="|Row ${it.count} ${slabs ? 'income up to' : 'income above'}|">Row 1 income up to</label>
+										<input class="input num" type="text" inputmode="decimal" autocomplete="off" th:id="${id + 'amount'}" th:name="${at + 'amount'}"
+											th:value="${row.amount}"
+											th:attr="aria-invalid=${#fields.hasErrors(at + 'amount')} ? 'true' : null, aria-describedby=${invalid} ? ${list + '-errors'} : null">
+									</td>
+									<td>
+										<label class="visually-hidden" th:for="${id + 'rate'}" th:text="|Row ${it.count} ${slabs ? 'tax rate' : 'surcharge'}|">Row 1 tax rate</label>
+										<input class="input num" type="text" inputmode="decimal" autocomplete="off" th:id="${id + 'rate'}" th:name="${at + 'rate'}"
+											th:value="${row.rate}"
+											th:attr="aria-invalid=${#fields.hasErrors(at + 'rate')} ? 'true' : null, aria-describedby=${invalid} ? ${list + '-errors'} : null">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<ul class="slab-errors" th:id="${list + '-errors'}" th:if="${invalid}">
+						<li class="error-text" th:each="message : ${#fields.errors(list + '*')}">
+							<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${message}">Row 1: enter the tax rate.</span>
+						</li>
+					</ul>
+				</section>
+			</th:block>
+
+			<section class="form-section" aria-labelledby="section-source">
+				<h3 class="form-section-title" id="section-source">Source</h3>
+				<div class="form-grid">
+					<div class="span-all">
+						<div th:replace="~{fragments/form :: textarea(name='sourceNote', label='Where these values come from', rows=4, help='The notification, circular or trusted summary, with its link. Shown next to the rules and kept with every payslip that uses them.')}"></div>
+					</div>
+					<div th:replace="~{fragments/form :: input(name='verifiedOn', label='Checked against the source on', type='date')}"></div>
+				</div>
+			</section>
+
+			<div class="form-actions">
+				<a class="btn btn-ghost" th:href="@{/admin/statutory} + '#' + ${anchor}">Cancel</a>
+				<button class="btn btn-primary" type="submit">Add version</button>
+			</div>
+		</div>
+	</form>
+
+	<div class="detail-side">
+		<section class="card" aria-labelledby="latest-title">
+			<div class="card-header">
+				<div>
+					<h2 class="card-title" id="latest-title">Version it follows</h2>
+					<p class="card-subtitle" th:text="${latest.title()}">Provident Fund</p>
+				</div>
+			</div>
+			<div class="card-body stack">
+				<dl class="dl">
+					<dt>In force from</dt>
+					<dd th:text="${@fmt.date(latest.effectiveFrom())}">1 Apr 2026</dd>
+					<dt>Ends</dt>
+					<dd th:text="${latest.effectiveTo() != null} ? ${@fmt.date(latest.effectiveTo())} : 'No end date yet'">No end date yet</dd>
+					<dt>Last verified</dt>
+					<dd th:text="${@fmt.date(latest.verifiedOn())}">5 Oct 2026</dd>
+				</dl>
+				<div class="action-block">
+					<p>Adding a version ends this one on the day before the new date. Versions start on the 1st, so each pay month uses one set of rules.</p>
+					<p>Finalized payslips keep the rules they were calculated with. A date in the past applies the new values to months not finalized yet.</p>
+				</div>
+			</div>
+			<div class="card-footer">
+				<span>Every new version is recorded</span>
+				<a th:href="@{/admin/audit(entity='Statutory rule')}">View in audit log</a>
+			</div>
+		</section>
+	</div>
+</div>
+</body>
+</html>

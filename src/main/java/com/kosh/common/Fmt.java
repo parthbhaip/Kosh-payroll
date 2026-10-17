@@ -52,6 +52,11 @@ public class Fmt {
 		return sign(rounded) + RUPEE + grouped(rounded.abs());
 	}
 
+	/** {@code 12%}, {@code 8.33%}, {@code 0.75%}: a rate in per cent, without trailing zeros. */
+	public String percent(BigDecimal rate) {
+		return (rate != null) ? rate.stripTrailingZeros().toPlainString() + "%" : NONE;
+	}
+
 	/**
 	 * Short form for stat cards: {@code ₹45,000} below one lakh, then {@code ₹1.2 L} and {@code ₹3.4 Cr} with one
 	 * decimal (dropped when it is zero, so {@code ₹1 L}).

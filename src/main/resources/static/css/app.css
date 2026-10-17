@@ -3358,3 +3358,144 @@ a.page-link:not([aria-current]):hover {
 .week-check .checkbox {
 	margin: 0;
 }
+
+/* ---------------------------------------------------------------- Statutory rules (admin/statutory) */
+/* Jump links to each rule family's card. */
+.rule-index {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-2);
+}
+
+/* The sticky top bar must not cover a card opened from the jump links. */
+.rule-card {
+	scroll-margin-top: calc(64px + var(--space-4));
+}
+
+/* Values beside their source; the source drops below the values under 960px. */
+.rule-body {
+	display: grid;
+	gap: var(--space-6);
+	align-items: start;
+}
+
+@media (min-width: 960px) {
+	.rule-body {
+		grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+	}
+}
+
+.rule-value {
+	display: block;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+}
+
+.rule-help {
+	display: block;
+	margin-top: 2px;
+	font-size: var(--text-sm);
+	color: var(--color-text-muted);
+}
+
+.rule-source {
+	padding: var(--space-4);
+	border-radius: var(--radius-sm);
+	background: var(--color-page);
+}
+
+.rule-source-title {
+	font-size: var(--text-sm);
+	font-weight: 600;
+	color: var(--color-text-secondary);
+}
+
+/* Source notes carry long links. */
+.rule-source-note {
+	margin: var(--space-2) 0 var(--space-3);
+	font-size: var(--text-sm);
+	overflow-wrap: anywhere;
+}
+
+.rule-source .dl {
+	grid-template-columns: auto minmax(0, 1fr);
+	font-size: var(--text-sm);
+}
+
+.rule-source .dl dt,
+.rule-source .dl dd {
+	padding: var(--space-2) 0;
+}
+
+.rule-source .dl dt {
+	padding-right: var(--space-4);
+}
+
+/* Slab tables run edge to edge under the values. */
+.rule-table {
+	border-top: 1px solid var(--color-divider);
+}
+
+/* "Withdraw the version from ..." under a scheduled version's notice. */
+.rule-withdraw {
+	margin-top: var(--space-3);
+}
+
+.rule-checked {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	color: var(--color-success);
+	font-weight: 500;
+}
+
+/* An addon after the input: "%", "years". */
+.input-group-end .input {
+	border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+.input-group-end .input-addon {
+	border-right: 1px solid var(--color-control-border);
+	border-left: 0;
+	border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Editable slab rows inside a form. Cells are relative so hidden labels stay inside the scroll box on phones. */
+.slab-editor {
+	border: 1px solid var(--color-divider);
+	border-radius: var(--radius-sm);
+}
+
+.slab-editor th,
+.slab-editor td {
+	padding-inline: var(--space-2);
+}
+
+.slab-editor td {
+	position: relative;
+	padding-block: var(--space-2);
+}
+
+.slab-editor th:first-child,
+.slab-editor td:first-child {
+	padding-left: var(--space-3);
+}
+
+.slab-editor th:last-child,
+.slab-editor td:last-child {
+	padding-right: var(--space-3);
+}
+
+.slab-editor .input,
+.slab-editor .select {
+	min-width: 112px;
+}
+
+.slab-errors {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	margin: var(--space-3) 0 0;
+	padding: 0;
+	list-style: none;
+}

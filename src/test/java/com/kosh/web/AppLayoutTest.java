@@ -94,7 +94,7 @@ class AppLayoutTest {
 	@Test
 	@WithMockUser(username = "admin@kosh.test", roles = "ADMIN")
 	void adminSeesSettingsAndEveryOfficeAreaButNoSelfService() throws Exception {
-		String page = render(get("/admin/statutory"), "test-only/app-page");
+		String page = render(get("/admin/statutory"), "admin/statutory/overview");
 
 		assertThat(page).contains(">Settings</p>")
 			.contains("<a class=\"nav-link\" href=\"/admin/statutory\" title=\"Statutory rules\" aria-current=\"page\">")

@@ -61,7 +61,10 @@ class AccessRulesTest {
 		expect("/admin/audit", granted, admin);
 		expect("/admin/company", granted, admin);
 		expect("/admin/company/pay-settings", granted, admin);
-		expect("/admin/statutory", granted, (admin == 200) ? 404 : admin);
+		expect("/admin/statutory", granted, admin);
+		expect("/admin/statutory/pf/new", granted, admin);
+		expect("/admin/statutory/pt/new?state=MH", granted, admin);
+		expect("/admin/no-such-page", granted, (admin == 200) ? 404 : admin);
 		expect("/hr/employees", granted, (hr == 200) ? 404 : hr);
 		expect("/me/payslips", granted, (me == 200) ? 404 : me);
 	}

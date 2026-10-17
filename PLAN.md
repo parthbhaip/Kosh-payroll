@@ -79,7 +79,7 @@ How this file works
 - [x] T13 Holiday calendar and work week
   - Per-location holiday list for each calendar year (national, festival, optional), work week pattern (e.g. Mon-Sat with 2nd/4th Saturday off), copy last year's list. Service answers "is working day?" and "working days between". Unit tests incl. 2nd/4th Saturday rule.
 
-- [ ] T14 Statutory rule tables
+- [x] T14 Statutory rule tables
   - Effective-dated tables + entities for PF settings, ESI settings, PT slabs (state x gender x range, February amount, annual cap), tax regimes (slabs, standard deduction, rebate limit and max, cess, surcharge thresholds), old-regime deduction caps, gratuity settings.
   - A Flyway migration seeds exactly the values in `docs/STATUTORY-RATES.md` with `effective_from = 2026-04-01`.
   - `StatutoryRuleService.forDate(LocalDate)` returns one immutable snapshot of all rules in force.
