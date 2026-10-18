@@ -17,7 +17,7 @@ public record CompanyProfile(String legalName, String brandName, String addressL
 
 	public static final String PINCODE_FORMAT = "[1-9][0-9]{5}";
 
-	static final String PAN_FORMAT = "[A-Z]{5}[0-9]{4}[A-Z]";
+	public static final String PAN_FORMAT = "[A-Z]{5}[0-9]{4}[A-Z]";
 
 	static final String TAN_FORMAT = "[A-Z]{4}[0-9]{5}[A-Z]";
 

@@ -156,7 +156,7 @@ class StatutoryRuleController {
 		model.addAttribute("family", family);
 		model.addAttribute("latest", draft.latest());
 		model.addAttribute("fields", family.fields());
-		model.addAttribute("genders", Gender.values());
+		model.addAttribute("genders", Gender.PT_SLAB_GENDERS);
 		model.addAttribute("anchor", family.anchor(state));
 		model.addAttribute("action", UriComponentsBuilder.fromPath(BASE + "/" + family.slug())
 			.queryParamIfPresent("state", Optional.ofNullable(state).map(IndianState::name))

@@ -21,9 +21,9 @@ public record PtRules(BigDecimal annualCap, List<PtSlab> slabs) implements Rules
 		slabs = slabs.stream().sorted(ORDER).toList();
 	}
 
-	/** The slabs for one gender, lowest first. */
+	/** The slabs a person of this gender pays on ({@link Gender#ptSlabGender()}), lowest first. */
 	public List<PtSlab> slabs(Gender gender) {
-		return slabs.stream().filter(slab -> slab.gender() == gender).toList();
+		return slabs.stream().filter(slab -> slab.gender() == gender.ptSlabGender()).toList();
 	}
 
 	/** The slab that a gross monthly salary falls in. */

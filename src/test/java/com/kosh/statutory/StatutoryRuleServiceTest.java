@@ -138,6 +138,15 @@ class StatutoryRuleServiceTest {
 		assertThat(maharashtra.slabFor(gender, gross).amountFor(month)).isEqualByComparingTo(pt);
 	}
 
+	@ParameterizedTest(name = "transgender, earning {0} in {1}, pays {2} like a man")
+	@CsvSource({ "7500, SEPTEMBER, 0", "9000, SEPTEMBER, 175", "24000, SEPTEMBER, 200", "25000, FEBRUARY, 300" })
+	void aTransgenderEmployeePaysOnTheGeneralSlabs(BigDecimal gross, Month month, BigDecimal pt) {
+		PtRules maharashtra = service.forDate(TODAY).pt(IndianState.MH).orElseThrow();
+
+		assertThat(maharashtra.slabs(Gender.TRANSGENDER)).isEqualTo(maharashtra.slabs(Gender.MALE));
+		assertThat(maharashtra.slabFor(Gender.TRANSGENDER, gross).amountFor(month)).isEqualByComparingTo(pt);
+	}
+
 	@Test
 	void aMaleEmployeeAboveTheTopLimitEveryMonthPaysTheAnnualMaximum() {
 		PtRules maharashtra = service.forDate(TODAY).pt(IndianState.MH).orElseThrow();
@@ -356,6 +365,10 @@ class StatutoryRuleServiceTest {
 				new PtSlab(Gender.FEMALE, null, money("200"), money("300")))))
 			.isEqualTo("Two slabs for men end at ₹7,500.00.");
 		assertThat(ptProblem(List.of(new PtSlab(null, null, money("200"), money("300")))))
+			.isEqualTo("Choose the gender and enter both amounts of every slab.");
+		assertThat(ptProblem(List.of(new PtSlab(Gender.MALE, null, money("200"), money("300")),
+				new PtSlab(Gender.FEMALE, null, money("200"), money("300")),
+				new PtSlab(Gender.TRANSGENDER, null, money("200"), money("300")))))
 			.isEqualTo("Choose the gender and enter both amounts of every slab.");
 		assertThat(ptProblem(List.of(new PtSlab(Gender.MALE, null, money("200"), money("300")),
 				new PtSlab(Gender.FEMALE, null, money("-200"), money("300")))))

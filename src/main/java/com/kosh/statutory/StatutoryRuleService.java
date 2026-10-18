@@ -442,11 +442,12 @@ public class StatutoryRuleService {
 	}
 
 	private void ptSlabProblems(List<PtSlab> slabs, List<Problem> problems) {
-		String problem = rowsProblem(slabs, slab -> slab.gender() == null || slab.monthly() == null
-				|| slab.february() == null, "Choose the gender and enter both amounts of every slab.",
+		String problem = rowsProblem(slabs, slab -> slab.gender() == null
+				|| !Gender.PT_SLAB_GENDERS.contains(slab.gender()) || slab.monthly() == null || slab.february() == null,
+				"Choose the gender and enter both amounts of every slab.",
 				slab -> firstOf(moneyIfAny(slab.upTo()), moneyProblem(slab.monthly()), moneyProblem(slab.february())));
 		if (problem == null) {
-			for (Gender gender : Gender.values()) {
+			for (Gender gender : Gender.PT_SLAB_GENDERS) {
 				List<BigDecimal> limits = slabs.stream()
 					.filter(slab -> slab.gender() == gender)
 					.map(PtSlab::upTo)
@@ -643,7 +644,7 @@ public class StatutoryRuleService {
 	private List<Table> tables(Rules rules) {
 		if (rules instanceof PtRules pt) {
 			List<List<String>> rows = new ArrayList<>();
-			for (Gender gender : Gender.values()) {
+			for (Gender gender : Gender.PT_SLAB_GENDERS) {
 				BigDecimal previous = null;
 				for (PtSlab slab : pt.slabs(gender)) {
 					rows.add(List.of(gender.label(), range(previous, slab.upTo()), fmt.money(slab.monthly()),

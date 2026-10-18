@@ -26,8 +26,8 @@ import com.kosh.web.Flash;
 
 /**
  * An item in use cannot be deleted (PLAN T12): HR is told to deactivate it instead, the item and its audit trail stay,
- * and deactivating still works. No real table references the structure before T15, so a probe table here points at all
- * five through foreign keys, as the employees table will. Runs WITHOUT a test transaction, because the refused delete
+ * and deactivating still works. A probe table here points at all five through foreign keys, as the employees table does
+ * since T15 ({@code EmployeeModelTest} checks the employees' own keys). Runs WITHOUT a test transaction, because the refused delete
  * must fail at the database for real; it drops the probe table and removes its items and their audit events afterwards.
  */
 @SpringBootTest
