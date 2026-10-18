@@ -42,6 +42,16 @@ class LinksTest {
 	}
 
 	@Test
+	void filterLinksSetOrDropOneFilterAndGoBackToTheFirstPage() {
+		onRequest("/hr/employees", "q=Aarti%20K&status=EXITED&sort=code,asc&page=2");
+
+		assertThat(links.filter("status", "ACTIVE")).isEqualTo("/hr/employees?q=Aarti%20K&sort=code,asc&status=ACTIVE");
+		assertThat(links.filter("status", null)).isEqualTo("/hr/employees?q=Aarti%20K&sort=code,asc");
+		onRequest("/hr/employees", null);
+		assertThat(links.filter("status", null)).isEqualTo("/hr/employees");
+	}
+
+	@Test
 	void linksWorkWithoutAQueryStringAndKeepEncodedValues() {
 		onRequest("/hr/employees", null);
 		assertThat(links.page(1)).isEqualTo("/hr/employees?page=1");

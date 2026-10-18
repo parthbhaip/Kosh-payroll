@@ -91,7 +91,7 @@ How this file works
   - `Employee` entity + migration: code (`KSH-0001`, generated), names, gender, date of birth, personal email, mobile, addresses, emergency contact; joining date, confirmation date, employment type (PERMANENT, PROBATION, FIXED_TERM with end date, INTERN), status (ACTIVE, ON_NOTICE, EXITED), department, designation, grade, location, cost centre, reporting manager (self-reference); PAN (encrypted + hash), UAN, ESI IP number, PF policy, PT exempt flag + reason, person-with-disability flag; bank name, IFSC, account number (encrypted), account holder name.
   - Link to `User`. Validation per CLAUDE.md patterns. Repository queries with fetch joins. Tests.
 
-- [ ] T16 Employee directory and profile
+- [x] T16 Employee directory and profile
   - `/hr/employees`: search (name, code), filters (department, location, status, type), sort, pagination, status chips, total count.
   - Profile with tabs: Overview, Job, Salary (only for salary roles), Statutory, Bank (masked), Documents, History. Tests for salary-tab visibility by role.
 

@@ -58,7 +58,7 @@
 					<label class="visually-hidden" for="employee-search">Search employees</label>
 					<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
 					<input class="input" id="employee-search" name="q" type="search" placeholder="Search employees"
-						autocomplete="off">
+						maxlength="100" autocomplete="off">
 				</form>
 				<div class="topbar-tools">
 					<button class="btn btn-ghost btn-icon topbar-bell" type="button" popovertarget="notifications-menu"

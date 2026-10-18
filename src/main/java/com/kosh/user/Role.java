@@ -20,6 +20,9 @@ public enum Role {
 
 	private static final String PREFIX = "ROLE_";
 
+	/** The roles that see salary figures (CLAUDE.md > Roles); everyone else sees only their own. */
+	public static final Set<Role> SALARY_ROLES = Set.of(ADMIN, HR, PAYROLL, FINANCE);
+
 	private final String label;
 
 	private final String summary;
@@ -51,6 +54,11 @@ public enum Role {
 			}
 		}
 		return Optional.empty();
+	}
+
+	/** Whether a user holding these roles may see other people's salary figures. */
+	public static boolean seesSalaries(Collection<Role> roles) {
+		return roles.stream().anyMatch(SALARY_ROLES::contains);
 	}
 
 	/** Role names for the audit log, in the order of {@link Role}. */

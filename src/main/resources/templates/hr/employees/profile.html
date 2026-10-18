@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:replace="~{layouts/app :: layout(title=${profile.employee().fullName()}, crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/employees}">Employees</a></li>
+</th:block>
+<th:block th:fragment="content" th:with="e=${profile.employee()}, tab=${profile.tab().name()}">
+	<section class="card profile-header" aria-label="Summary">
+		<div class="profile-identity">
+			<span class="avatar avatar-lg" aria-hidden="true"
+				th:text="${#strings.substring(e.firstName, 0, 1) + (e.lastName != null ? #strings.substring(e.lastName, 0, 1) : '')}">SD</span>
+			<div>
+				<p class="profile-role"><th:block th:text="${e.designation.name}">Machine Operator</th:block>, <th:block th:text="${e.department.name}">Production</th:block></p>
+				<div class="cluster profile-badges">
+					<span class="mono profile-code" th:text="${e.code}">KSH-0003</span>
+					<span th:replace="~{fragments/ui :: badge(status=${e.status.name()}, label=${e.status.label()})}"></span>
+					<span class="badge" th:text="${e.employmentType.label()}">Permanent</span>
+				</div>
+			</div>
+		</div>
+		<dl class="profile-facts">
+			<div><dt>Location</dt><dd th:text="${e.location.name}">Shiroli factory</dd></div>
+			<div><dt>Reports to</dt>
+				<dd th:if="${e.reportingManager == null}">—</dd>
+				<dd th:if="${e.reportingManager != null}"><a th:href="@{/hr/employees/{id}(id=${e.reportingManager.id})}" th:text="${e.reportingManager.fullName()}">Ravi Kale</a></dd></div>
+			<div><dt>Joined</dt><dd th:text="${@fmt.date(e.joiningDate)}">1 Apr 2024</dd></div>
+			<div><dt>Mobile</dt><dd class="mono" th:text="${e.mobile}">9822012345</dd></div>
+		</dl>
+	</section>
+
+	<nav class="tabs" aria-label="Employee record">
+		<a class="tab" th:each="item : ${profile.tabs()}" th:href="@{${'/hr/employees/' + e.id + item.path()}}"
+			th:attr="aria-current=${item == profile.tab()} ? 'page'" th:text="${item.label()}">Overview</a>
+	</nav>
+
+	<!-- Overview -->
+	<div class="profile-grid" th:if="${tab == 'OVERVIEW'}">
+		<section class="card" aria-labelledby="personal-title">
+			<div class="card-header"><h2 class="card-title" id="personal-title">Personal details</h2></div>
+			<div class="card-body">
+				<dl class="dl">
+					<dt>Full name</dt><dd th:text="${e.fullName()}">Sunita Deshmukh</dd>
+					<dt>Gender</dt><dd th:text="${e.gender.label()}">Female</dd>
+					<dt>Date of birth</dt><dd th:text="|${@fmt.date(e.dateOfBirth)} (${profile.age()} years)|">11 Feb 1993 (33 years)</dd>
+					<dt>Mobile</dt><dd class="mono" th:text="${e.mobile}">9822012345</dd>
+					<dt>Personal email</dt><dd th:text="${e.personalEmail} ?: '—'">sunita.d@example.com</dd>
+				</dl>
+			</div>
+		</section>
+		<section class="card" aria-labelledby="contact-title">
+			<div class="card-header"><h2 class="card-title" id="contact-title">Addresses and emergency contact</h2></div>
+			<div class="card-body">
+				<dl class="dl">
+					<dt>Current address</dt><dd th:replace="~{:: address(${e.currentAddress})}"></dd>
+					<dt>Permanent address</dt><dd th:replace="~{:: address(${e.permanentAddress})}"></dd>
+					<dt>Emergency contact</dt>
+					<dd th:if="${e.emergencyContact == null}">—</dd>
+					<dd th:if="${e.emergencyContact != null}">
+						<span th:text="${e.emergencyContact.name()}">Anil Deshmukh</span><span th:if="${e.emergencyContact.relation() != null}" th:text="| (${e.emergencyContact.relation()})|"> (Brother)</span>
+						<span class="cell-sub mono" th:text="${e.emergencyContact.phone()}">9890011223</span>
+					</dd>
+				</dl>
+			</div>
+		</section>
+	</div>
+
+	<!-- Job -->
+	<div class="profile-grid" th:if="${tab == 'JOB'}">
+		<section class="card" aria-labelledby="job-title">
+			<div class="card-header"><h2 class="card-title" id="job-title">Role and placement</h2></div>
+			<div class="card-body">
+				<dl class="dl">
+					<dt>Employee code</dt><dd class="mono" th:text="${e.code}">KSH-0003</dd>
+					<dt>Department</dt><dd th:text="${e.department.name}">Production</dd>
+					<dt>Designation</dt><dd th:text="${e.designation.name}">Machine Operator</dd>
+					<dt>Grade</dt><dd th:text="${e.grade != null} ? ${e.grade.name} : '—'">Operators</dd>
+					<dt>Work location</dt><dd th:text="${e.location.name}">Shiroli factory</dd>
+					<dt>Cost centre</dt><dd th:text="${e.costCentre != null} ? ${e.costCentre.name} : '—'">Shiroli plant</dd>
+					<dt>Reports to</dt>
+					<dd th:if="${e.reportingManager == null}">—</dd>
+					<dd th:if="${e.reportingManager != null}"><a th:href="@{/hr/employees/{id}(id=${e.reportingManager.id})}" th:text="${e.reportingManager.fullName()}">Ravi Kale</a></dd>
+				</dl>
+			</div>
+		</section>
+		<div class="profile-side">
+			<section class="card" aria-labelledby="terms-title">
+				<div class="card-header"><h2 class="card-title" id="terms-title">Employment</h2></div>
+				<div class="card-body">
+					<dl class="dl">
+						<dt>Type</dt><dd th:text="${e.employmentType.label()}">Permanent</dd>
+						<dt>Joining date</dt><dd th:text="${@fmt.date(e.joiningDate)}">1 Apr 2024</dd>
+						<dt>Length of service</dt><dd th:text="${profile.service()}">2 years 6 months</dd>
+						<dt>Confirmation date</dt><dd th:text="${@fmt.date(e.confirmationDate)}">1 Oct 2024</dd>
+						<th:block th:if="${e.employmentType.allowsEndDate()}">
+							<dt>Contract ends</dt><dd th:text="${@fmt.date(e.contractEndDate)}">31 Mar 2027</dd>
+						</th:block>
+						<dt>Sign-in account</dt>
+						<dd th:if="${e.user == null}">No sign-in account</dd>
+						<dd th:if="${e.user != null}">
+							<a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users/{id}(id=${e.user.id})}" th:text="${e.user.email}">sunita.deshmukh@kosh.test</a>
+							<span sec:authorize="!hasRole('ADMIN')" th:text="${e.user.email}">sunita.deshmukh@kosh.test</span>
+						</dd>
+					</dl>
+				</div>
+			</section>
+			<section class="card" aria-labelledby="reports-title">
+				<div class="card-header">
+					<h2 class="card-title" id="reports-title">Direct reports</h2>
+					<span class="badge" th:text="${profile.reports().size()}">3</span>
+				</div>
+				<div class="card-body" th:if="${profile.reports().isEmpty()}">
+					<p class="text-secondary" th:text="|Nobody reports to ${e.firstName}.|">Nobody reports to Sunita.</p>
+				</div>
+				<ul class="person-list" th:unless="${profile.reports().isEmpty()}">
+					<li th:each="report : ${profile.reports()}">
+						<a class="cell-title" th:href="@{/hr/employees/{id}(id=${report.id})}" th:text="${report.fullName()}">Anita Patil</a>
+						<span class="cell-sub" th:text="|${report.designation.name}, ${report.department.name}|">Machine Operator, Production</span>
+					</li>
+				</ul>
+			</section>
+		</div>
+	</div>
+
+	<!-- Salary: the salary roles only (the service refuses this tab to anyone else). -->
+	<section class="card" th:if="${tab == 'SALARY'}" aria-labelledby="salary-title">
+		<div class="card-header"><h2 class="card-title" id="salary-title">Salary</h2></div>
+		<div th:replace="~{fragments/ui :: empty(image='documents', title='No salary assigned yet', text=|Once ${e.firstName} has a salary structure, the monthly and annual breakup and the employer contributions show here.|, action=null)}"></div>
+	</section>
+
+	<!-- Statutory -->
+	<section class="card" th:if="${tab == 'STATUTORY'}" aria-labelledby="statutory-title">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="statutory-title">Statutory details</h2>
+				<p class="card-subtitle" th:unless="${profile.fullPan()}">The PAN is masked. Only HR sees it in full.</p>
+			</div>
+		</div>
+		<div class="card-body">
+			<dl class="dl">
+				<dt>PAN</dt><dd class="mono" th:text="${profile.fullPan()} ? (${e.pan} ?: '—') : ${@fmt.maskedPan(e.pan)}">ABCDE1234F</dd>
+				<dt>UAN</dt><dd class="mono" th:text="${e.uan} ?: '—'">100987654321</dd>
+				<dt>ESI IP number</dt><dd class="mono" th:text="${e.esiIpNumber} ?: '—'">3100456789</dd>
+				<dt>PF</dt>
+				<dd><span th:text="${e.pfPolicy.label()}">Restrict to the wage ceiling</span>
+					<span class="cell-sub" th:text="${e.pfPolicy.description()}">Employee and employer PF on PF wages up to the ceiling.</span></dd>
+				<dt>Professional tax</dt>
+				<dd th:unless="${e.ptExempt}">Deducted where the work location charges it</dd>
+				<dd th:if="${e.ptExempt}">Exempt<span class="cell-sub" th:text="${e.ptExemptReason}">Serving member of the armed forces</span></dd>
+				<dt>Person with disability</dt><dd th:text="${e.personWithDisability} ? 'Yes' : 'No'">No</dd>
+			</dl>
+		</div>
+	</section>
+
+	<!-- Bank -->
+	<section class="card" th:if="${tab == 'BANK'}" aria-labelledby="bank-title">
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="bank-title">Salary account</h2>
+				<p class="card-subtitle">The account number is masked here. Only the bank file carries it in full.</p>
+			</div>
+		</div>
+		<div class="card-body" th:if="${e.bankAccount != null}">
+			<dl class="dl">
+				<dt>Account holder</dt><dd th:text="${e.bankAccount.holderName()}">Sunita Deshmukh</dd>
+				<dt>Bank</dt><dd th:text="${e.bankAccount.bankName()}">Bank of Maharashtra</dd>
+				<dt>IFSC</dt><dd class="mono" th:text="${e.bankAccount.ifsc()}">MAHB0000123</dd>
+				<dt>Account number</dt><dd class="mono" th:text="${@fmt.maskedAccount(e.bankAccount.accountNumber())}">XXXXXX4321</dd>
+			</dl>
+		</div>
+		<th:block th:if="${e.bankAccount == null}">
+			<div th:replace="~{fragments/ui :: empty(image='documents', title='No bank details yet', text=|${e.firstName} can’t be paid by bank transfer until a salary account is recorded.|, action=null)}"></div>
+		</th:block>
+	</section>
+
+	<!-- Documents -->
+	<section class="card" th:if="${tab == 'DOCUMENTS'}" aria-labelledby="documents-title">
+		<div class="card-header"><h2 class="card-title" id="documents-title">Documents</h2></div>
+		<div th:replace="~{fragments/ui :: empty(image='documents', title='No documents yet', text=|Offer letters, ID proofs and other files kept for ${e.firstName} are listed here.|, action=null)}"></div>
+	</section>
+
+	<!-- History -->
+	<section class="card" th:if="${tab == 'HISTORY'}" aria-labelledby="history-title">
+		<div class="card-header"><h2 class="card-title" id="history-title">History</h2></div>
+		<div class="card-body">
+			<ol th:replace="~{fragments/ui :: timeline(${profile.history()})}"></ol>
+		</div>
+	</section>
+</th:block>
+
+<dd th:fragment="address(address)">
+	<th:block th:if="${address == null}">—</th:block>
+	<th:block th:if="${address != null}">
+		<span class="address-line" th:text="${address.line1()}">Flat 4, Shree Apartments</span>
+		<span class="address-line" th:if="${address.line2() != null}" th:text="${address.line2()}">Rajarampuri 5th Lane</span>
+		<span class="address-line" th:text="|${address.city()}, ${address.state().label()} ${address.pincode()}|">Kolhapur, Maharashtra 416008</span>
+	</th:block>
+</dd>
+</body>
+</html>

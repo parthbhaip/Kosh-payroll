@@ -39,12 +39,12 @@ class AppLayoutTest {
 	@Test
 	@WithMockUser(username = "meera.deshpande@kosh.test", roles = { "HR", "EMPLOYEE" })
 	void hrUserGetsSidebarTopBarAndUserMenu() throws Exception {
-		String page = render(get("/hr/employees"), "test-only/app-page");
+		String page = render(get("/hr/employees"), "hr/employees/list");
 
 		assertThat(page).contains("<title>Employees | Kosh</title>")
 			.contains("<a class=\"skip-link\" href=\"#main\">Skip to content</a>")
 			.contains("<main class=\"page-content\" id=\"main\" tabindex=\"-1\">")
-			.contains("<p>Directory content</p>")
+			.contains("aria-label=\"Filter employees\"")
 			.doesNotContain("th:");
 		// Sidebar: a popover (drawer below 960px) with the groups and pages this user may open.
 		assertThat(page).contains("<aside class=\"sidebar\" id=\"app-sidebar\" popover>")
@@ -161,7 +161,7 @@ class AppLayoutTest {
 	@Test
 	@WithMockUser(username = "nisha.kale@kosh.test", roles = { "HR", "PAYROLL", "EMPLOYEE" })
 	void multiRoleUserReachesEachOfItsAreasAndSeesThemAll() throws Exception {
-		render(get("/hr/employees"), "test-only/app-page");
+		render(get("/hr/employees"), "hr/employees/list");
 		render(get("/me/payslips"), "test-only/app-page");
 		String page = render(get("/payroll/runs"), "test-only/app-page");
 

@@ -33,6 +33,13 @@ public class Links {
 		return current().replaceQueryParam("sort", property + "," + direction).replaceQueryParam("page").build().toUriString();
 	}
 
+	/** The current list with filter {@code name} set to {@code value} (null removes it), back on the first page. */
+	public String filter(String name, String value) {
+		UriComponentsBuilder link = current().replaceQueryParam("page");
+		return ((value == null) ? link.replaceQueryParam(name) : link.replaceQueryParam(name, value)).build()
+			.toUriString();
+	}
+
 	/**
 	 * Page numbers to show: the first, the last and the current page with one neighbour on each side, with
 	 * {@link #GAP} where pages are left out. A gap would hide a single page, so that page is shown instead.

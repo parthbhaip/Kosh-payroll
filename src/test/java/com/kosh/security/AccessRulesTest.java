@@ -65,7 +65,9 @@ class AccessRulesTest {
 		expect("/admin/statutory/pf/new", granted, admin);
 		expect("/admin/statutory/pt/new?state=MH", granted, admin);
 		expect("/admin/no-such-page", granted, (admin == 200) ? 404 : admin);
-		expect("/hr/employees", granted, (hr == 200) ? 404 : hr);
+		expect("/hr/employees", granted, hr);
+		expect("/hr/employees/0", granted, (hr == 200) ? 404 : hr);
+		expect("/hr/employees/0/salary", granted, (hr == 200) ? 404 : hr);
 		expect("/me/payslips", granted, (me == 200) ? 404 : me);
 	}
 

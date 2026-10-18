@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layouts/app :: layout(title='Employees', crumbs=~{::crumbs}, content=~{::content})}">
+<body>
+<th:block th:fragment="crumbs"><li><a th:href="@{/hr}">HR</a></li></th:block>
+<th:block th:fragment="content"
+	th:with="narrowed=${filter.narrowed()}">
+	<div class="card">
+		<form class="filter-bar" method="get" th:action="@{/hr/employees}" role="search" aria-label="Filter employees">
+			<div class="field field-search">
+				<label class="label" for="directory-search">Search</label>
+				<div class="search">
+					<svg th:replace="~{fragments/icon :: icon('search')}"></svg>
+					<input class="input" id="directory-search" name="q" type="search" maxlength="100"
+						placeholder="Name or employee code" autocomplete="off" th:value="${filter.text()}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="label" for="directory-department">Department</label>
+				<select class="select" id="directory-department" name="department">
+					<option value="">All departments</option>
+					<option th:each="option : ${departments}" th:value="${option.id()}"
+						th:text="${option.active()} ? ${option.name()} : |${option.name()} (inactive)|"
+						th:selected="${option.id() == filter.departmentId()}">Production</option>
+				</select>
+			</div>
+			<div class="field">
+				<label class="label" for="directory-location">Location</label>
+				<select class="select" id="directory-location" name="location">
+					<option value="">All locations</option>
+					<option th:each="option : ${locations}" th:value="${option.id()}"
+						th:text="${option.active()} ? ${option.name()} : |${option.name()} (inactive)|"
+						th:selected="${option.id() == filter.locationId()}">Shiroli factory</option>
+				</select>
+			</div>
+			<div class="field">
+				<label class="label" for="directory-type">Employment type</label>
+				<select class="select" id="directory-type" name="type">
+					<option value="">All types</option>
+					<option th:each="option : ${types}" th:value="${option.name()}" th:text="${option.label()}"
+						th:selected="${option == filter.type()}">Permanent</option>
+				</select>
+			</div>
+			<input type="hidden" name="status" th:if="${filter.status() != null}" th:value="${filter.status().name()}">
+			<input type="hidden" name="sort" th:if="${sortParam != null}" th:value="${sortParam}">
+			<div class="filter-actions">
+				<a class="btn btn-ghost" th:if="${narrowed}" th:href="@{/hr/employees}">Clear</a>
+				<button class="btn btn-secondary" type="submit"><svg th:replace="~{fragments/icon :: icon('filter')}"></svg>Apply</button>
+			</div>
+		</form>
+
+		<div class="directory-summary">
+			<nav class="cluster" aria-label="Filter by status">
+				<a class="chip" th:with="href=${@links.filter('status', null)}" th:href="${href}"
+					th:attr="aria-current=${filter.status() == null} ? 'true'">All <span class="chip-count" th:text="${total}">40</span></a>
+				<a class="chip" th:each="option : ${statuses}" th:with="href=${@links.filter('status', option.name())}"
+					th:href="${href}" th:attr="aria-current=${option == filter.status()} ? 'true'">
+					<th:block th:text="${option.label()}">Active</th:block> <span class="chip-count" th:text="${counts.get(option)}">35</span></a>
+			</nav>
+			<p class="result-count"><strong th:text="${page.totalElements}">40</strong>
+				<th:block th:text="${page.totalElements == 1} ? 'employee' : 'employees'">employees</th:block></p>
+		</div>
+
+		<div class="table-wrap" th:unless="${page.empty}">
+			<table class="table">
+				<caption class="visually-hidden">Employees</caption>
+				<thead>
+					<tr>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Employee', property='firstName', sort=${sort})}"></th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Code', property='code', sort=${sort})}"></th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Department', property='department.name', sort=${sort})}"></th>
+						<th scope="col">Location</th>
+						<th scope="col">Reports to</th>
+						<th scope="col">Type</th>
+						<th th:replace="~{fragments/ui :: sortHeader(label='Joined', property='joiningDate', sort=${sort})}"></th>
+						<th scope="col">Status</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="row : ${page.content}">
+						<th scope="row">
+							<a class="cell-title" th:href="@{/hr/employees/{id}(id=${row.id})}" th:text="${row.fullName()}">Sunita Deshmukh</a>
+							<span class="cell-sub" th:text="${row.designation.name}">Machine Operator</span>
+						</th>
+						<td class="mono" th:text="${row.code}">KSH-0003</td>
+						<td th:text="${row.department.name}">Production</td>
+						<td th:text="${row.location.name}">Shiroli factory</td>
+						<td th:classappend="${row.reportingManager == null} ? 'text-muted'"
+							th:text="${row.reportingManager != null} ? ${row.reportingManager.fullName()} : '—'">Ravi Kale</td>
+						<td th:text="${row.employmentType.label()}">Permanent</td>
+						<td th:text="${@fmt.date(row.joiningDate)}">1 Apr 2024</td>
+						<td><span th:replace="~{fragments/ui :: badge(status=${row.status.name()}, label=${row.status.label()})}"></span></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<th:block th:if="${page.empty and narrowed}">
+			<div th:replace="~{fragments/ui :: empty(image='search', title='No employees match these filters', text='Try another name or employee code, or clear the filters.', action=~{::clear-filters})}"></div>
+		</th:block>
+		<th:block th:if="${page.empty and !narrowed}">
+			<div th:replace="~{fragments/ui :: empty(image='people', title='No employees yet', text='Everyone HR adds shows up here, with their department, location and status.', action=null)}"></div>
+		</th:block>
+
+		<nav th:replace="~{fragments/ui :: pagination(${page}, 'employees', 'Employee list pages')}"></nav>
+	</div>
+</th:block>
+<a class="btn btn-secondary" th:fragment="clear-filters" th:href="@{/hr/employees}">Clear filters</a>
+</body>
+</html>
