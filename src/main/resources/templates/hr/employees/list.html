@@ -5,6 +5,11 @@
 <th:block th:fragment="crumbs"><li><a th:href="@{/hr}">HR</a></li></th:block>
 <th:block th:fragment="content"
 	th:with="narrowed=${filter.narrowed()}">
+	<div class="page-toolbar">
+		<p>Everyone on the company’s rolls, with their department, location and status.</p>
+		<a class="btn btn-primary" th:href="@{/hr/employees/new}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add employee</a>
+	</div>
+
 	<div class="card">
 		<form class="filter-bar" method="get" th:action="@{/hr/employees}" role="search" aria-label="Filter employees">
 			<div class="field field-search">
@@ -99,12 +104,13 @@
 			<div th:replace="~{fragments/ui :: empty(image='search', title='No employees match these filters', text='Try another name or employee code, or clear the filters.', action=~{::clear-filters})}"></div>
 		</th:block>
 		<th:block th:if="${page.empty and !narrowed}">
-			<div th:replace="~{fragments/ui :: empty(image='people', title='No employees yet', text='Everyone HR adds shows up here, with their department, location and status.', action=null)}"></div>
+			<div th:replace="~{fragments/ui :: empty(image='people', title='No employees yet', text='Everyone HR adds shows up here, with their department, location and status.', action=~{::add-first})}"></div>
 		</th:block>
 
 		<nav th:replace="~{fragments/ui :: pagination(${page}, 'employees', 'Employee list pages')}"></nav>
 	</div>
 </th:block>
 <a class="btn btn-secondary" th:fragment="clear-filters" th:href="@{/hr/employees}">Clear filters</a>
+<a class="btn btn-primary" th:fragment="add-first" th:href="@{/hr/employees/new}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add the first employee</a>
 </body>
 </html>

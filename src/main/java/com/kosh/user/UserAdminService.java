@@ -181,6 +181,20 @@ public class UserAdminService {
 		return user.getId();
 	}
 
+	/**
+	 * Creates a sign-in account with the Employee role only for someone HR is adding or editing (PLAN T17), and
+	 * e-mails the set-password link, exactly as {@link #invite} does. Open to HR as well as ADMIN; any other role is
+	 * still given by an admin on the user's page.
+	 * @return the new account, for the employee record to link to
+	 * @throws BusinessRuleException on field {@code email} when the address is taken
+	 */
+	@Transactional
+	@PreAuthorize("hasAnyRole('HR', 'ADMIN')")
+	public User inviteEmployee(String name, String email, Authentication actor) {
+		long id = invite(name, email, Set.of(Role.EMPLOYEE), actor);
+		return find(id);
+	}
+
 	/** Changes the name and roles. Changed roles end the user's sessions, unless it is the admin's own account. */
 	@Transactional
 	public Saved update(long id, String name, Set<Role> roles, Authentication actor) {

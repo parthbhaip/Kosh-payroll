@@ -301,7 +301,8 @@ kbd,
 	color: var(--color-ink);
 }
 
-.label .optional {
+.label .optional,
+.form-section-title .optional {
 	font-weight: 400;
 	color: var(--color-text-muted);
 }
@@ -3615,4 +3616,69 @@ a.page-link:not([aria-current]):hover {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		width: 100%;
 	}
+}
+
+/* ---------------------------------------------------------------- Add and edit employee (multi-step form) */
+.wizard-progress {
+	padding: var(--space-5);
+	border-bottom: 1px solid var(--color-divider);
+}
+
+/* Radio choices in a row (gender); the error and help lines take a row of their own. */
+.fieldset-inline {
+	flex-direction: row;
+	flex-wrap: wrap;
+	column-gap: var(--space-6);
+}
+
+.fieldset-inline .error-text,
+.fieldset-inline .help {
+	flex-basis: 100%;
+}
+
+.permanent-fields,
+.pt-reason,
+.pwd-check,
+.login-email {
+	margin-top: var(--space-5);
+}
+
+/* Each switch or checkbox on its own line, also while the field between them is hidden. */
+.pt-section .check {
+	display: flex;
+}
+
+/* Fields that only matter for one answer hide for the others. Without :has() they simply stay visible; the server
+   ignores them then. */
+.address-same:has(input[name="permanentSame"]:checked) .permanent-fields,
+.pt-section:has(input[name="ptExempt"]:not(:checked)) .pt-reason,
+.login-section:has(input[name="createLogin"]:not(:checked)) .login-email {
+	display: none;
+}
+
+/* A review section: its title and a "Change" link on one line. */
+.form-section-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+	margin-bottom: var(--space-2);
+}
+
+.form-section-header .form-section-title {
+	margin-bottom: 0;
+}
+
+.problem-list {
+	margin: var(--space-2) 0 0;
+	padding-left: var(--space-5);
+}
+
+.problem-list li + li {
+	margin-top: var(--space-1);
+}
+
+.problem-list a {
+	font-weight: 600;
 }

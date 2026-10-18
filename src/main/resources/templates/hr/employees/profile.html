@@ -38,7 +38,8 @@
 	<!-- Overview -->
 	<div class="profile-grid" th:if="${tab == 'OVERVIEW'}">
 		<section class="card" aria-labelledby="personal-title">
-			<div class="card-header"><h2 class="card-title" id="personal-title">Personal details</h2></div>
+			<div class="card-header"><h2 class="card-title" id="personal-title">Personal details</h2>
+				<a class="btn btn-ghost btn-sm" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='personal')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> personal details</span></a></div>
 			<div class="card-body">
 				<dl class="dl">
 					<dt>Full name</dt><dd th:text="${e.fullName()}">Sunita Deshmukh</dd>
@@ -50,7 +51,8 @@
 			</div>
 		</section>
 		<section class="card" aria-labelledby="contact-title">
-			<div class="card-header"><h2 class="card-title" id="contact-title">Addresses and emergency contact</h2></div>
+			<div class="card-header"><h2 class="card-title" id="contact-title">Addresses and emergency contact</h2>
+				<a class="btn btn-ghost btn-sm" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='personal')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> addresses and emergency contact</span></a></div>
 			<div class="card-body">
 				<dl class="dl">
 					<dt>Current address</dt><dd th:replace="~{:: address(${e.currentAddress})}"></dd>
@@ -69,7 +71,8 @@
 	<!-- Job -->
 	<div class="profile-grid" th:if="${tab == 'JOB'}">
 		<section class="card" aria-labelledby="job-title">
-			<div class="card-header"><h2 class="card-title" id="job-title">Role and placement</h2></div>
+			<div class="card-header"><h2 class="card-title" id="job-title">Role and placement</h2>
+				<a class="btn btn-ghost btn-sm" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='job')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> role and placement</span></a></div>
 			<div class="card-body">
 				<dl class="dl">
 					<dt>Employee code</dt><dd class="mono" th:text="${e.code}">KSH-0003</dd>
@@ -86,7 +89,8 @@
 		</section>
 		<div class="profile-side">
 			<section class="card" aria-labelledby="terms-title">
-				<div class="card-header"><h2 class="card-title" id="terms-title">Employment</h2></div>
+				<div class="card-header"><h2 class="card-title" id="terms-title">Employment</h2>
+					<a class="btn btn-ghost btn-sm" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='job')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> employment terms</span></a></div>
 				<div class="card-body">
 					<dl class="dl">
 						<dt>Type</dt><dd th:text="${e.employmentType.label()}">Permanent</dd>
@@ -136,6 +140,7 @@
 				<h2 class="card-title" id="statutory-title">Statutory details</h2>
 				<p class="card-subtitle" th:unless="${profile.fullPan()}">The PAN is masked. Only HR sees it in full.</p>
 			</div>
+			<a class="btn btn-ghost btn-sm" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='statutory')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> statutory details</span></a>
 		</div>
 		<div class="card-body">
 			<dl class="dl">
@@ -160,6 +165,7 @@
 				<h2 class="card-title" id="bank-title">Salary account</h2>
 				<p class="card-subtitle">The account number is masked here. Only the bank file carries it in full.</p>
 			</div>
+			<a class="btn btn-ghost btn-sm" th:if="${e.bankAccount != null}" th:href="@{/hr/employees/{id}/edit(id=${e.id}, step='bank')}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Edit<span class="visually-hidden"> bank details</span></a>
 		</div>
 		<div class="card-body" th:if="${e.bankAccount != null}">
 			<dl class="dl">
@@ -170,7 +176,7 @@
 			</dl>
 		</div>
 		<th:block th:if="${e.bankAccount == null}">
-			<div th:replace="~{fragments/ui :: empty(image='documents', title='No bank details yet', text=|${e.firstName} can’t be paid by bank transfer until a salary account is recorded.|, action=null)}"></div>
+			<div th:replace="~{fragments/ui :: empty(image='documents', title='No bank details yet', text=|${e.firstName} can’t be paid by bank transfer until a salary account is recorded.|, action=~{::add-bank})}"></div>
 		</th:block>
 	</section>
 
@@ -188,6 +194,8 @@
 		</div>
 	</section>
 </th:block>
+
+<a class="btn btn-primary" th:fragment="add-bank" th:href="@{/hr/employees/{id}/edit(id=${profile.employee().id}, step='bank')}"><svg th:replace="~{fragments/icon :: icon('plus')}"></svg>Add bank details</a>
 
 <dd th:fragment="address(address)">
 	<th:block th:if="${address == null}">—</th:block>

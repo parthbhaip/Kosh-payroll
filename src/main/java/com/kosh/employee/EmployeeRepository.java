@@ -58,6 +58,22 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long>, JpaSp
 		return normalized == null || normalized.isEmpty() ? Optional.empty() : findWithDetailsByUserEmail(normalized);
 	}
 
+	/**
+	 * Everyone who has not left, by name: the people an employee can report to. Organisation details are not loaded.
+	 * ponytail: the whole list for a select; a search picker when headcount reaches the thousands.
+	 */
+	@Query("""
+			select e from Employee e where e.status <> com.kosh.employee.EmployeeStatus.EXITED
+			order by e.firstName, e.lastName, e.id""")
+	List<Employee> findCurrent();
+
+	/** Whoever has this personal e-mail (stored lower case). */
+	List<Employee> findByPersonalEmail(String personalEmail);
+
+	Optional<Employee> findByUan(String uan);
+
+	Optional<Employee> findByEsiIpNumber(String esiIpNumber);
+
 	/** Internal: by look-up hash. Call {@link #findByPan}, which tidies and hashes the PAN as storing it does. */
 	Optional<Employee> findByPanHash(String panHash);
 

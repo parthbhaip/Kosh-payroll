@@ -66,6 +66,9 @@ public class Employee extends BaseEntity {
 	/** Every code is this prefix and a number of at least four digits: KSH-0001, KSH-12345. */
 	public static final String CODE_PREFIX = "KSH-";
 
+	/** The entity type in the audit log. */
+	public static final String AUDIT_TYPE = "Employee";
+
 	public static final int MAX_NAME = 60;
 
 	/** Youngest age on the joining date: nobody under 14 may be employed in India (PAYROLL-RULES section 15). */
@@ -467,22 +470,32 @@ public class Employee extends BaseEntity {
 	 * themselves or someone who already reports to them, directly or further down, since a reporting line must never loop
 	 */
 	void setReportingManager(Employee manager) {
+		checkReportingLine(this, getId(), manager);
+		this.reportingManager = manager;
+	}
+
+	/**
+	 * The rules of {@link #setReportingManager} without setting anything: {@code self} is the employee (or an unsaved
+	 * copy holding a form's changes, then {@code selfId} is the stored employee's id; null for someone new).
+	 * @throws BusinessRuleException on field {@code reportingManager} when the line would start at someone who has
+	 * left or would loop
+	 */
+	static void checkReportingLine(Employee self, Long selfId, Employee manager) {
 		if (manager != null && manager.getStatus() == EmployeeStatus.EXITED) {
 			throw new BusinessRuleException("reportingManager",
 					"Choose someone else: %s has left the company.".formatted(manager.fullName()));
 		}
 		Set<Long> seen = new HashSet<>();
 		for (Employee above = manager; above != null; above = above.getReportingManager()) {
-			if (above == this || (getId() != null && getId().equals(above.getId()))) {
+			if (above == self || (selfId != null && selfId.equals(above.getId()))) {
 				throw new BusinessRuleException("reportingManager", (above == manager)
 						? "Choose someone else: an employee can’t report to themselves."
-						: "Choose someone else: %s already reports to %s.".formatted(manager.fullName(), fullName()));
+						: "Choose someone else: %s already reports to %s.".formatted(manager.fullName(), self.fullName()));
 			}
 			if (above.getId() != null && !seen.add(above.getId())) {
 				break;
 			}
 		}
-		this.reportingManager = manager;
 	}
 
 	void setUser(User user) {

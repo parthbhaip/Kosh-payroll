@@ -320,6 +320,7 @@ class EmployeeDirectoryTest {
 
 		assertThat(page).contains("<h2 class=\"empty-title\">No employees yet</h2>")
 			.contains("<img src=\"/img/empty/people.svg\"")
+			.contains("Add the first employee")
 			.contains(">All <span class=\"chip-count\">0</span>")
 			.doesNotContain("<table")
 			.doesNotContain("class=\"pagination\"");
@@ -522,7 +523,8 @@ class EmployeeDirectoryTest {
 		}
 		assertThat(page(hr("/hr/employees/" + ravi.getId() + "/bank"), "hr/employees/profile"))
 			.contains("<h2 class=\"empty-title\">No bank details yet</h2>")
-			.contains("Ravi can’t be paid by bank transfer until a salary account is recorded.");
+			.contains("Ravi can’t be paid by bank transfer until a salary account is recorded.")
+			.contains("href=\"/hr/employees/" + ravi.getId() + "/edit?step=bank\"", "Add bank details");
 	}
 
 	@Test

@@ -95,7 +95,7 @@ How this file works
   - `/hr/employees`: search (name, code), filters (department, location, status, type), sort, pagination, status chips, total count.
   - Profile with tabs: Overview, Job, Salary (only for salary roles), Statutory, Bank (masked), Documents, History. Tests for salary-tab visibility by role.
 
-- [ ] T17 Add and edit employee
+- [x] T17 Add and edit employee
   - Multi-step form (Personal -> Job -> Statutory -> Bank -> Review) with per-step validation and draft kept in session; duplicate PAN/email rejected inline.
   - On save: generate code, optionally create the login (EMPLOYEE role) and send an invite. Edits audited (bank and PAN changes logged with masked values). Tests.
 

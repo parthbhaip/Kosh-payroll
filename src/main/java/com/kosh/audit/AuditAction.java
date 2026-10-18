@@ -35,7 +35,10 @@ public enum AuditAction {
 	WORK_WEEK_CHANGED("Work week changed", "info"),
 	STATUTORY_VERSION_ADDED("Statutory rule version added", "warning"),
 	STATUTORY_RULES_CHECKED("Statutory rules checked", null),
-	STATUTORY_VERSION_WITHDRAWN("Statutory rule version withdrawn", "danger");
+	STATUTORY_VERSION_WITHDRAWN("Statutory rule version withdrawn", "danger"),
+	EMPLOYEE_ADDED("Employee added", "info"),
+	EMPLOYEE_UPDATED("Employee details changed", null),
+	BANK_DETAILS_CHANGED("Bank details changed", "warning");
 
 	private final String label;
 

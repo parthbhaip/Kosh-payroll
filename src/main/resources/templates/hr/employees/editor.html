@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	th:replace="~{layouts/app :: layout(title=${form.editing} ? |Edit ${form.recordName}| : 'Add employee', crumbs=~{::crumbs}, content=~{::content})}">
+<!-- The add and edit employee form, one step a page (PLAN T17). Model: form (the draft), step, steps (labels), base (the
+     form's URL), options (Job step choices), fullPan, states, genders, types, pfPolicies; on Review also problems
+     (step -> problems on other steps) and problemCount. Only one submit button per page, so Enter always continues. -->
+<body>
+<th:block th:fragment="crumbs">
+	<li><a th:href="@{/hr}">HR</a></li>
+	<li><a th:href="@{/hr/employees}">Employees</a></li>
+	<li th:if="${form.editing}"><a th:href="@{/hr/employees/{id}(id=${form.id})}" th:text="${form.recordName}">Sunita Deshmukh</a></li>
+</th:block>
+<th:block th:fragment="content"
+	th:with="editing=${form.editing}, stepName=${step.name()}, cancel=${form.editing ? '/hr/employees/' + form.id : '/hr/employees'}">
+	<div class="card">
+		<div class="wizard-progress">
+			<ol th:replace="~{fragments/ui :: stepper(${editing} ? 'Edit employee steps' : 'Add employee steps', ${steps}, ${step.number()})}"></ol>
+		</div>
+		<div class="card-header">
+			<div>
+				<h2 class="card-title" id="step-title" th:text="|Step ${step.number()} of ${steps.size()}: ${step.label()}|">Step 1 of 5: Personal</h2>
+				<p class="card-subtitle" th:text="${step.intro()}">Name, date of birth, contact details and addresses.</p>
+			</div>
+			<span class="mono text-secondary" th:if="${editing}" th:text="${form.code}">KSH-0003</span>
+		</div>
+
+		<form method="post" th:object="${form}" novalidate aria-labelledby="step-title"
+			th:action="${stepName == 'REVIEW'} ? @{${base}} : @{${base + '/' + step.slug()}}">
+			<div class="card-body">
+				<p th:replace="~{fragments/form :: globalErrors}"></p>
+
+				<!-- Step 1: Personal -->
+				<th:block th:if="${stepName == 'PERSONAL'}">
+					<section class="form-section" aria-labelledby="section-name">
+						<h3 class="form-section-title" id="section-name">Name</h3>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='firstName', label='First name', autocomplete='off')}"></div>
+							<div th:replace="~{fragments/form :: input(name='middleName', label='Middle name', optional=true, autocomplete='off', help='Often the father’s or husband’s name.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='lastName', label='Last name', optional=true, autocomplete='off', help='Leave empty for someone who uses one name.')}"></div>
+						</div>
+					</section>
+
+					<section class="form-section" aria-labelledby="section-about">
+						<h3 class="form-section-title" id="section-about">Personal details</h3>
+						<div class="form-grid">
+							<fieldset class="fieldset fieldset-inline span-all" th:with="invalid=${#fields.hasErrors('gender')}"
+								th:attr="aria-describedby=${invalid} ? 'gender-error'">
+								<legend>Gender</legend>
+								<label class="check" th:each="option : ${genders}">
+									<input class="radio" type="radio" th:field="*{gender}" th:value="${option.name()}">
+									<span th:text="${option.label()}">Female</span>
+								</label>
+								<p class="error-text" id="gender-error" th:if="${invalid}">
+									<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('gender'), ' ')}">Choose the gender.</span>
+								</p>
+							</fieldset>
+							<div th:replace="~{fragments/form :: input(name='dateOfBirth', label='Date of birth', type='date')}"></div>
+							<div th:replace="~{fragments/form :: input(name='mobile', label='Mobile number', type='tel', autocomplete='off', help='10 digits, starting with 6, 7, 8 or 9.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='personalEmail', label='Personal email', type='email', optional=true, autocomplete='off', help='Their own address. No two employees can share one, as payslips may be sent to it.')}"></div>
+						</div>
+					</section>
+
+					<section class="form-section" aria-labelledby="section-current">
+						<h3 class="form-section-title" id="section-current">Current address <span class="optional">(optional)</span></h3>
+						<p class="form-section-text">Where they live now. Fill in the whole address or leave it empty.</p>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='currentLine1', label='Address line 1', autocomplete='off', help='House, building and street.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='currentLine2', label='Address line 2', optional=true, autocomplete='off', help='Area or landmark.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='currentCity', label='City', autocomplete='off')}"></div>
+							<div th:replace="~{fragments/form :: select(name='currentState', label='State', options=${states}, placeholder='Choose a state')}"></div>
+							<div th:replace="~{fragments/form :: input(name='currentPincode', label='PIN code', autocomplete='off', help='6 digits.')}"></div>
+						</div>
+					</section>
+
+					<section class="form-section address-same" aria-labelledby="section-permanent">
+						<h3 class="form-section-title" id="section-permanent">Permanent address</h3>
+						<label class="check">
+							<input class="checkbox" type="checkbox" th:field="*{permanentSame}">
+							<span>Same as the current address</span>
+						</label>
+						<div class="form-grid permanent-fields">
+							<div th:replace="~{fragments/form :: input(name='permanentLine1', label='Address line 1', autocomplete='off', help='The home address on their ID documents.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='permanentLine2', label='Address line 2', optional=true, autocomplete='off', help='Area or landmark.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='permanentCity', label='City', autocomplete='off')}"></div>
+							<div th:replace="~{fragments/form :: select(name='permanentState', label='State', options=${states}, placeholder='Choose a state')}"></div>
+							<div th:replace="~{fragments/form :: input(name='permanentPincode', label='PIN code', autocomplete='off', help='6 digits.')}"></div>
+						</div>
+					</section>
+
+					<section class="form-section" aria-labelledby="section-emergency">
+						<h3 class="form-section-title" id="section-emergency">Emergency contact <span class="optional">(optional)</span></h3>
+						<p class="form-section-text">Whom to call if something happens to them at work.</p>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='emergencyName', label='Name', autocomplete='off')}"></div>
+							<div th:replace="~{fragments/form :: input(name='emergencyRelation', label='Relation', optional=true, autocomplete='off', help='For example, Spouse or Father.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='emergencyPhone', label='Mobile number', type='tel', autocomplete='off', help='10 digits, starting with 6, 7, 8 or 9.')}"></div>
+						</div>
+					</section>
+				</th:block>
+
+				<!-- Step 2: Job -->
+				<th:block th:if="${stepName == 'JOB'}">
+					<div class="flash flash-warning form-error" role="status" th:unless="${options.ready()}">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+						<div>
+							<p class="flash-title">The organisation isn’t set up yet</p>
+							<p class="flash-text">Every employee needs a department, a designation and a work location. Add them under <a th:href="@{/hr/org}">Organisation</a>; this draft is kept meanwhile.</p>
+						</div>
+					</div>
+					<section class="form-section" aria-labelledby="section-role">
+						<h3 class="form-section-title" id="section-role">Role and placement</h3>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: select(name='departmentId', label='Department', options=${options.departments()}, placeholder='Choose a department')}"></div>
+							<div th:replace="~{fragments/form :: select(name='designationId', label='Designation', options=${options.designations()}, placeholder='Choose a designation')}"></div>
+							<div th:replace="~{fragments/form :: select(name='locationId', label='Work location', options=${options.locations()}, placeholder='Choose a work location', help='Sets their holidays, work week and professional tax.')}"></div>
+							<div th:replace="~{fragments/form :: select(name='reportingManagerId', label='Reports to', optional=true, options=${options.managers()}, placeholder='Nobody', help='Their manager approves leave and attendance.')}"></div>
+							<div th:replace="~{fragments/form :: select(name='gradeId', label='Grade', optional=true, options=${options.grades()}, placeholder='No grade')}"></div>
+							<div th:replace="~{fragments/form :: select(name='costCentreId', label='Cost centre', optional=true, options=${options.costCentres()}, placeholder='No cost centre', help='Where their salary cost is booked in the salary journal.')}"></div>
+						</div>
+					</section>
+					<section class="form-section" aria-labelledby="section-terms">
+						<h3 class="form-section-title" id="section-terms">Employment terms</h3>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='joiningDate', label='Joining date', type='date')}"></div>
+							<div th:replace="~{fragments/form :: select(name='employmentType', label='Employment type', options=${types}, placeholder='Choose a type')}"></div>
+							<div th:replace="~{fragments/form :: input(name='contractEndDate', label='Contract end date', type='date', optional=true, help='Required for fixed-term staff. Interns may have one; others never do.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='confirmationDate', label='Confirmation date', type='date', optional=true, help='When probation ends or ended.')}"></div>
+						</div>
+					</section>
+				</th:block>
+
+				<!-- Step 3: Statutory -->
+				<th:block th:if="${stepName == 'STATUTORY'}">
+					<section class="form-section" aria-labelledby="section-numbers">
+						<h3 class="form-section-title" id="section-numbers">Tax and social security numbers</h3>
+						<p class="form-section-text">Letters are saved in capitals and spaces are removed. Payroll checks flag anyone without a PAN or UAN.</p>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='pan', label='PAN', optional=true, autocomplete='off', help=${form.panMasked != null} ? |On file: ${form.panMasked}. Leave empty to keep it, or type the new PAN.| : 'Ten characters, like ABCDE1234F. Needed for TDS and the annual tax statement.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='uan', label='UAN', optional=true, autocomplete='off', help='12 digits from EPFO. Leave empty for someone who has never been a PF member.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='esiIpNumber', label='ESI IP number', optional=true, autocomplete='off', help='10 digits from ESIC, for employees covered by ESI.')}"></div>
+						</div>
+					</section>
+					<section class="form-section" aria-labelledby="section-pf">
+						<h3 class="form-section-title" id="section-pf">Provident fund</h3>
+						<fieldset class="fieldset" th:with="invalid=${#fields.hasErrors('pfPolicy')}"
+							th:attr="aria-describedby=${invalid} ? 'pfPolicy-error'">
+							<legend>PF policy</legend>
+							<label class="check" th:each="policy : ${pfPolicies}">
+								<input class="radio" type="radio" th:field="*{pfPolicy}" th:value="${policy.name()}"
+									th:attr="aria-describedby=${'pf-help-' + policy.name()}">
+								<span class="check-text"><th:block th:text="${policy.label()}">Restrict to the wage ceiling</th:block>
+									<span class="help" th:id="${'pf-help-' + policy.name()}" th:text="${policy.description()}">Employee and employer PF on PF wages up to the ceiling.</span>
+								</span>
+							</label>
+							<p class="error-text" id="pfPolicy-error" th:if="${invalid}">
+								<svg th:replace="~{fragments/icon :: icon('alert')}"></svg><span th:text="${#strings.listJoin(#fields.errors('pfPolicy'), ' ')}">Choose the PF policy.</span>
+							</p>
+						</fieldset>
+					</section>
+					<section class="form-section pt-section" aria-labelledby="section-pt">
+						<h3 class="form-section-title" id="section-pt">Professional tax and disability</h3>
+						<label class="check">
+							<input class="switch" type="checkbox" role="switch" th:field="*{ptExempt}" aria-describedby="pt-exempt-help">
+							<span class="check-text">Exempt from professional tax
+								<span class="help" id="pt-exempt-help">Otherwise it is deducted wherever their work location charges it.</span>
+							</span>
+						</label>
+						<div class="pt-reason">
+							<div th:replace="~{fragments/form :: input(name='ptExemptReason', label='Reason for the exemption', autocomplete='off', help='For example, a serving member of the armed forces.')}"></div>
+						</div>
+						<label class="check pwd-check">
+							<input class="checkbox" type="checkbox" th:field="*{personWithDisability}" aria-describedby="pwd-help">
+							<span class="check-text">Person with disability
+								<span class="help" id="pwd-help">Kept for statutory returns.</span>
+							</span>
+						</label>
+					</section>
+				</th:block>
+
+				<!-- Step 4: Bank -->
+				<th:block th:if="${stepName == 'BANK'}">
+					<section class="form-section" aria-labelledby="section-bank">
+						<h3 class="form-section-title" id="section-bank">Salary account</h3>
+						<p class="form-section-text">Leave every field empty if the details aren’t known yet: salary can’t be paid by bank transfer until they’re added. The account number is shown masked everywhere but the bank file.</p>
+						<div class="form-grid">
+							<div th:replace="~{fragments/form :: input(name='holderName', label='Account holder', autocomplete='off', help='Exactly as the bank has it.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='bankName', label='Bank', autocomplete='off', help='For example, Bank of Maharashtra.')}"></div>
+							<div th:replace="~{fragments/form :: input(name='ifsc', label='IFSC', autocomplete='off', help='11 characters, like MAHB0000123. Printed on the cheque book.')}"></div>
+							<div class="span-all form-grid">
+								<div th:replace="~{fragments/form :: input(name='accountNumber', label='Account number', autocomplete='off', help=${form.accountMasked != null} ? |On file: ${form.accountMasked}. Leave empty to keep it, or type the new number.| : '9 to 18 digits.')}"></div>
+								<div th:replace="~{fragments/form :: input(name='accountNumberConfirm', label='Account number again', autocomplete='off', help='Type it once more to catch slips.')}"></div>
+							</div>
+						</div>
+					</section>
+				</th:block>
+
+				<!-- Step 5: Review -->
+				<th:block th:if="${stepName == 'REVIEW'}">
+					<div class="flash flash-danger form-error" role="alert" th:if="${problemCount > 0}">
+						<svg th:replace="~{fragments/icon :: icon('alert')}"></svg>
+						<div>
+							<p class="flash-title" th:text="${problemCount == 1} ? 'Fix 1 thing before saving' : |Fix ${problemCount} things before saving|">Fix 2 things before saving</p>
+							<ul class="problem-list">
+								<th:block th:each="entry : ${problems}">
+									<li th:each="problem : ${entry.value}"><a th:href="@{${base + '/' + entry.key.slug()}}" th:text="${entry.key.label()}">Statutory</a>: <span th:text="${problem.message()}">Sunita Deshmukh (KSH-0003) already has this PAN.</span></li>
+								</th:block>
+							</ul>
+						</div>
+					</div>
+
+					<section class="form-section" aria-labelledby="review-personal">
+						<div class="form-section-header">
+							<h3 class="form-section-title" id="review-personal">Personal</h3>
+							<a class="btn btn-ghost btn-sm" th:href="@{${base + '/personal'}}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Change<span class="visually-hidden"> personal details</span></a>
+						</div>
+						<dl class="dl">
+							<dt>Name</dt><dd th:text="${form.fullName()} ?: '—'">Sunita Ramesh Deshmukh</dd>
+							<dt>Gender</dt><dd th:text="${form.gender != null} ? ${form.gender.label()} : '—'">Female</dd>
+							<dt>Date of birth</dt><dd th:text="${@fmt.date(form.dateOfBirth)}">11 Feb 1993</dd>
+							<dt>Mobile</dt><dd class="mono" th:text="${form.mobile} ?: '—'">9822012345</dd>
+							<dt>Personal email</dt><dd th:text="${form.personalEmail} ?: '—'">sunita.d@example.com</dd>
+							<dt>Current address</dt><dd th:text="${form.currentAddressText()} ?: '—'">Flat 4, Shree Apartments, Kolhapur, Maharashtra 416008</dd>
+							<dt>Permanent address</dt>
+							<dd th:text="${form.permanentSame} ? (${form.currentAddressText() != null} ? 'Same as the current address' : '—') : (${form.permanentAddressText()} ?: '—')">Same as the current address</dd>
+							<dt>Emergency contact</dt><dd th:text="${form.emergencyText()} ?: '—'">Anil Deshmukh (Brother), 9890011223</dd>
+						</dl>
+					</section>
+
+					<section class="form-section" aria-labelledby="review-job">
+						<div class="form-section-header">
+							<h3 class="form-section-title" id="review-job">Job</h3>
+							<a class="btn btn-ghost btn-sm" th:href="@{${base + '/job'}}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Change<span class="visually-hidden"> job details</span></a>
+						</div>
+						<dl class="dl">
+							<dt>Department</dt><dd th:text="${options.departments().get(form.departmentId)} ?: '—'">Production</dd>
+							<dt>Designation</dt><dd th:text="${options.designations().get(form.designationId)} ?: '—'">Machine Operator</dd>
+							<dt>Work location</dt><dd th:text="${options.locations().get(form.locationId)} ?: '—'">Shiroli factory</dd>
+							<dt>Reports to</dt><dd th:text="${options.managers().get(form.reportingManagerId)} ?: 'Nobody'">Ravi Kale (KSH-0001)</dd>
+							<dt>Grade</dt><dd th:text="${options.grades().get(form.gradeId)} ?: '—'">Operators</dd>
+							<dt>Cost centre</dt><dd th:text="${options.costCentres().get(form.costCentreId)} ?: '—'">Shiroli plant</dd>
+							<dt>Joining date</dt><dd th:text="${@fmt.date(form.joiningDate)}">1 Nov 2026</dd>
+							<dt>Employment type</dt><dd th:text="${form.employmentType != null} ? ${form.employmentType.label()} : '—'">Permanent</dd>
+							<th:block th:if="${form.employmentType != null and form.employmentType.allowsEndDate()}">
+								<dt>Contract end date</dt><dd th:text="${@fmt.date(form.contractEndDate)}">31 Mar 2027</dd>
+							</th:block>
+							<dt>Confirmation date</dt><dd th:text="${@fmt.date(form.confirmationDate)}">1 May 2027</dd>
+						</dl>
+					</section>
+
+					<section class="form-section" aria-labelledby="review-statutory">
+						<div class="form-section-header">
+							<h3 class="form-section-title" id="review-statutory">Statutory</h3>
+							<a class="btn btn-ghost btn-sm" th:href="@{${base + '/statutory'}}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Change<span class="visually-hidden"> statutory details</span></a>
+						</div>
+						<dl class="dl">
+							<dt>PAN</dt>
+							<dd class="mono" th:text="${form.keepsPan()} ? ${form.panMasked} : (${#strings.isEmpty(form.pan)} ? '—' : (${fullPan} ? ${form.pan} : ${@fmt.maskedPan(form.pan)}))">ABCDE1234F</dd>
+							<dt>UAN</dt><dd class="mono" th:text="${form.uan} ?: '—'">100987654321</dd>
+							<dt>ESI IP number</dt><dd class="mono" th:text="${form.esiIpNumber} ?: '—'">3100456789</dd>
+							<dt>PF</dt><dd th:text="${form.pfPolicy != null} ? ${form.pfPolicy.label()} : '—'">Restrict to the wage ceiling</dd>
+							<dt>Professional tax</dt><dd th:text="${form.ptExempt} ? |Exempt: ${form.ptExemptReason}| : 'Deducted where the work location charges it'">Deducted where the work location charges it</dd>
+							<dt>Person with disability</dt><dd th:text="${form.personWithDisability} ? 'Yes' : 'No'">No</dd>
+						</dl>
+					</section>
+
+					<section class="form-section" aria-labelledby="review-bank">
+						<div class="form-section-header">
+							<h3 class="form-section-title" id="review-bank">Bank</h3>
+							<a class="btn btn-ghost btn-sm" th:href="@{${base + '/bank'}}"><svg th:replace="~{fragments/icon :: icon('edit')}"></svg>Change<span class="visually-hidden"> bank details</span></a>
+						</div>
+						<p class="text-secondary" th:if="${form.bankEmpty()}">No bank details. Salary can’t be paid by bank transfer until they’re added.</p>
+						<dl class="dl" th:unless="${form.bankEmpty()}">
+							<dt>Account holder</dt><dd th:text="${form.holderName} ?: '—'">Sunita R Deshmukh</dd>
+							<dt>Bank</dt><dd th:text="${form.bankName} ?: '—'">Bank of Maharashtra</dd>
+							<dt>IFSC</dt><dd class="mono" th:text="${form.ifsc} ?: '—'">MAHB0000123</dd>
+							<dt>Account number</dt><dd class="mono" th:text="${form.keepsAccount()} ? ${form.accountMasked} : ${@fmt.maskedAccount(form.accountNumber)}">XXXXXX4321</dd>
+						</dl>
+					</section>
+
+					<section class="form-section login-section" aria-labelledby="review-login">
+						<h3 class="form-section-title" id="review-login">Sign-in account</h3>
+						<p th:if="${form.loginOnFile != null}">Signs in to Kosh as <strong th:text="${form.loginOnFile}">sunita.deshmukh@kosh.test</strong>. An admin changes their roles on the user’s page.</p>
+						<th:block th:if="${form.loginOnFile == null}">
+							<label class="check">
+								<input class="switch" type="checkbox" role="switch" th:field="*{createLogin}" aria-describedby="login-help">
+								<span class="check-text">Create a sign-in account and email an invite
+									<span class="help" id="login-help">With the Employee role: their own payslips, leave, attendance and tax declarations. The invite link works once, for 48 hours.</span>
+								</span>
+							</label>
+							<div class="login-email">
+								<div th:replace="~{fragments/form :: input(name='loginEmail', label='Sign-in email', type='email', autocomplete='off', help='They sign in with this address and a password they choose.')}"></div>
+							</div>
+						</th:block>
+					</section>
+				</th:block>
+
+				<div class="form-actions">
+					<a class="btn btn-ghost" th:href="@{${cancel}}">Cancel</a>
+					<a class="btn btn-secondary" th:if="${step.previous() != null}" th:href="@{${base + '/' + step.previous().slug()}}">Back</a>
+					<button class="btn btn-primary" type="submit" th:unless="${stepName == 'REVIEW'}">Continue</button>
+					<th:block th:if="${stepName == 'REVIEW'}">
+						<button class="btn btn-primary" type="submit" th:if="${problemCount == 0}" th:text="${editing} ? 'Save changes' : 'Add employee'">Add employee</button>
+						<a class="btn btn-primary" th:unless="${problemCount == 0}" th:with="first=${problems.keySet().iterator().next()}"
+							th:href="@{${base + '/' + first.slug()}}" th:text="|Go to ${first.label()}|">Go to Statutory</a>
+					</th:block>
+				</div>
+			</div>
+		</form>
+
+		<div class="card-footer" th:if="${editing}">
+			<span>Nothing changes until you choose Save changes on the last step.</span>
+			<a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/audit(entity='Employee', entityId=${form.id})}">View in audit log</a>
+		</div>
+		<div class="card-footer" th:unless="${editing}">
+			<span>Your answers are kept as a draft until you add the employee or discard it.</span>
+			<button class="btn btn-ghost btn-sm" type="button" commandfor="discard-dialog" command="show-modal"><svg th:replace="~{fragments/icon :: icon('trash')}"></svg>Discard draft</button>
+			<!-- Asks first: a misclick must not throw away a long form. Keeping the draft comes first, so it gets the focus. -->
+			<dialog class="modal" id="discard-dialog" aria-labelledby="discard-title" aria-describedby="discard-text">
+				<div class="dialog-header">
+					<h2 id="discard-title">Discard this draft?</h2>
+				</div>
+				<div class="dialog-body">
+					<p id="discard-text">Everything typed for this employee is thrown away. Nothing has been saved yet.</p>
+				</div>
+				<div class="dialog-footer">
+					<form method="dialog">
+						<button class="btn btn-secondary" type="submit">Keep the draft</button>
+					</form>
+					<form method="post" th:action="@{/hr/employees/new/discard}">
+						<button class="btn btn-danger" type="submit">Discard draft</button>
+					</form>
+				</div>
+			</dialog>
+		</div>
+	</div>
+</th:block>
+</body>
+</html>
